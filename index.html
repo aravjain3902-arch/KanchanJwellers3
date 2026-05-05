@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A0800">
+<meta name="description" content="Kanchan Jwellers — Customer Management App">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kanchan Jwellers">
+<link rel="manifest" id="pwaManifest">
+<title>Kanchan Jwellers</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBOAiYOs37EwRQvm0u-LrfubGiKigSa9SU",
+    authDomain: "kanchan-jwellers.firebaseapp.com",
+    databaseURL: "https://kanchan-jwellers-default-rtdb.firebaseio.com",
+    projectId: "kanchan-jwellers",
+    storageBucket: "kanchan-jwellers.firebasestorage.app",
+    messagingSenderId: "959885549484",
+    appId: "1:959885549484:web:864ad721a3e86f60d0e409"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#B8860B;--gold2:#D4A017;--gold3:#F0C040;--gold4:#FDF6DC;
+  --deep:#0A0800;--dark:#1A1200;--dark2:#2C1F00;--dark3:#3D2B00;
+  --cream:#FEFCF3;--white:#FFFFFF;
+  --red:#8B0000;--red2:#C0392B;--green:#1A4D2E;--green2:#27AE60;
+  --border:#E8D080;--border2:#D4A017;
+  --shadow:0 2px 20px rgba(180,140,20,0.10);
+  --shadow-md:0 6px 30px rgba(180,140,20,0.18);
+  --shadow-lg:0 12px 50px rgba(180,140,20,0.25);
+  --f-display:'Cormorant Garamond',serif;
+  --f-body:'DM Sans',sans-serif;
+}
+body{background:var(--cream);color:var(--dark);min-height:100vh;font-family:var(--f-body);}
+
+/*  WELCOME SPLASH  */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--deep);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;padding:30px;
+  transition:opacity 0.6s ease, visibility 0.6s;
+}
+#splash.gone{opacity:0;visibility:hidden;}
+.splash-logo{
+  width:90px;height:90px;border-radius:22px;
+  background:linear-gradient(145deg,#F0C040,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;font-family:'Cormorant Garamond',serif;font-weight:700;color:#1A1200;margin-bottom:20px;letter-spacing:-1px;
+  box-shadow:0 0 60px rgba(240,192,64,0.4);
+  animation:logoGlow 2s ease infinite alternate;
+}
+@keyframes logoGlow{from{box-shadow:0 0 40px rgba(240,192,64,0.3)}to{box-shadow:0 0 80px rgba(240,192,64,0.6)}}
+.splash-title{
+  font-family:var(--f-display);font-size:2.4rem;font-weight:700;
+  color:var(--gold3);letter-spacing:2px;margin-bottom:6px;text-align:center;
+}
+.splash-sub{font-size:0.78rem;color:#7A6030;letter-spacing:3px;text-transform:uppercase;margin-bottom:28px;}
+.splash-line{
+  width:80px;height:1.5px;
+  background:linear-gradient(90deg,transparent,var(--gold2),transparent);
+  margin-bottom:24px;
+}
+.splash-msg{
+  background:rgba(240,208,64,0.07);border:1px solid rgba(212,160,23,0.25);
+  border-radius:14px;padding:18px 24px;text-align:center;max-width:320px;
+}
+.splash-msg p{font-size:0.88rem;color:#B09040;line-height:1.7;}
+.splash-msg a{color:var(--gold3);text-decoration:none;font-weight:600;}
+.splash-btn{
+  margin-top:24px;padding:14px 44px;
+  background:linear-gradient(135deg,#B8860B,#F0C040);
+  border:none;border-radius:50px;color:var(--deep);
+  font-family:var(--f-body);font-size:0.95rem;font-weight:700;
+  cursor:pointer;letter-spacing:0.5px;
+  box-shadow:0 6px 24px rgba(240,192,64,0.35);
+  transition:all 0.2s;
+}
+.splash-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(240,192,64,0.45);}
+
+/*  HEADER  */
+header{
+  background:var(--deep);
+  border-bottom:1px solid #2A1F00;
+  position:sticky;top:38px;z-index:300;
+}
+.header-inner{max-width:600px;margin:0 auto;padding:14px 16px 12px;}
+.header-row{display:flex;align-items:center;gap:12px;}
+.logo-mark{
+  width:52px;height:52px;border-radius:14px;flex-shrink:0;
+  background:linear-gradient(145deg,#F0C040,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;font-family:var(--f-display);font-weight:700;color:var(--deep);
+  box-shadow:0 4px 18px rgba(240,192,64,0.4);
+  position:relative;overflow:hidden;
+}
+.logo-mark::after{
+  content:'';position:absolute;top:-30%;left:-20%;width:60%;height:200%;
+  background:rgba(255,255,255,0.15);transform:skewX(-20deg);
+}
+.brand-col{flex:1;}
+.brand-name{
+  font-family:var(--f-display);font-size:1.45rem;font-weight:700;
+  background:linear-gradient(90deg,#F0C040,#D4A017,#F0C040);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  letter-spacing:1px;animation:shimmer 3s linear infinite;
+}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+.brand-sub{font-size:0.62rem;color:#5A4520;letter-spacing:2.5px;text-transform:uppercase;margin-top:1px;}
+.h-pills{display:flex;gap:7px;}
+.hpill{
+  background:rgba(240,208,64,0.07);
+  border:1px solid rgba(212,160,23,0.2);
+  border-radius:10px;padding:6px 11px;text-align:center;min-width:52px;
+}
+.hpill-n{font-size:1.05rem;font-weight:700;color:var(--gold3);font-family:var(--f-display);}
+.hpill-l{font-size:0.58rem;color:#5A4520;display:block;text-transform:uppercase;letter-spacing:0.8px;}
+.gold-bar{height:1.5px;background:linear-gradient(90deg,transparent,var(--gold2) 30%,var(--gold3) 50%,var(--gold2) 70%,transparent);margin:10px 0;}
+
+/*  TABS  */
+/* tabs moved to bottom nav */
+
+/*  MAIN  */
+main{max-width:600px;margin:0 auto;padding:16px 14px 90px;}
+
+/*  SEARCH  */
+.search-box{position:relative;margin-bottom:14px;}
+.search-box input{
+  width:100%;padding:13px 16px 13px 46px;
+  border:1.5px solid #E8D080;border-radius:14px;
+  font-family:var(--f-body);font-size:0.9rem;
+  background:var(--white);color:var(--dark);outline:none;
+  transition:all 0.2s;box-shadow:var(--shadow);
+}
+.search-box input:focus{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(212,160,23,0.1);}
+.search-box input::placeholder{color:#C8A860;}
+/* ---- CITY FILTER CHIPS ---- */
+#cityFilterWrap{
+  margin-bottom:12px;
+  display:none;
+}
+#cityFilterWrap.visible{ display:block; }
+#cityChips{
+  display:flex;gap:7px;overflow-x:auto;padding:2px 0 4px;
+  scrollbar-width:none;
+}
+#cityChips::-webkit-scrollbar{display:none;}
+.city-chip{
+  flex-shrink:0;padding:6px 14px;border-radius:30px;
+  border:1.5px solid rgba(212,160,23,0.3);
+  font-family:var(--f-body);font-size:0.76rem;font-weight:700;
+  cursor:pointer;background:var(--white);color:#7A6030;
+  transition:all 0.18s;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;
+  display:flex;align-items:center;gap:5px;
+}
+.city-chip:active{ transform:scale(0.95); }
+.city-chip.active{
+  background:linear-gradient(135deg,#B8860B,#D4A017);
+  color:var(--deep);border-color:transparent;
+  box-shadow:0 3px 10px rgba(212,160,23,0.4);
+}
+.city-chip-count{
+  background:rgba(0,0,0,0.12);border-radius:20px;
+  padding:1px 6px;font-size:0.65rem;
+}
+.city-chip.active .city-chip-count{ background:rgba(0,0,0,0.18); }
+.s-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:1rem;}
+.clr-btn{position:absolute;right:13px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;font-size:0.9rem;color:#C8A860;display:none;}
+
+/*  STATS  */
+.stat-strip{display:flex;gap:8px;margin-bottom:18px;}
+.stat-card{
+  flex:1;background:var(--white);border-radius:14px;
+  border:1.5px solid var(--border);padding:11px 8px;
+  text-align:center;box-shadow:var(--shadow);
+  transition:transform 0.18s;
+}
+.stat-card:hover{transform:translateY(-2px);}
+.stat-n{font-size:1.3rem;font-weight:700;color:var(--gold);font-family:var(--f-display);}
+.stat-l{font-size:0.6rem;color:#B09040;text-transform:uppercase;letter-spacing:0.6px;margin-top:2px;}
+
+/*  FORM CARD  */
+.form-card{
+  background:var(--white);border-radius:18px;
+  border:1.5px solid var(--border);
+  box-shadow:var(--shadow-lg);
+  margin-bottom:18px;display:none;overflow:hidden;
+  animation:slideUp 0.28s ease;
+}
+.form-card.visible{display:block;}
+.form-header{
+  background:linear-gradient(135deg,var(--deep),var(--dark2));
+  padding:16px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #2A1F00;
+}
+.form-header-title{
+  font-family:var(--f-display);font-size:1.1rem;font-weight:600;
+  color:var(--gold3);letter-spacing:0.5px;
+}
+.form-body{padding:20px 16px;}
+
+/* Photo area */
+.photo-row{
+  display:flex;align-items:center;gap:16px;
+  margin-bottom:18px;padding-bottom:18px;
+  border-bottom:1px solid #F0E8C0;
+}
+.photo-circle{
+  width:74px;height:74px;border-radius:50%;flex-shrink:0;
+  border:2.5px solid var(--gold2);overflow:hidden;cursor:pointer;
+  background:var(--gold4);display:flex;align-items:center;justify-content:center;
+  font-size:1.7rem;transition:opacity 0.2s;
+  box-shadow:0 0 0 4px #FFF8E1,0 0 0 6px rgba(212,160,23,0.25);
+}
+.photo-circle:hover{opacity:0.8;}
+.photo-circle img{width:100%;height:100%;object-fit:cover;}
+.pbtn{
+  padding:7px 14px;border-radius:9px;font-family:var(--f-body);font-size:0.78rem;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--border);background:var(--gold4);color:var(--gold);
+  transition:all 0.18s;
+}
+.pbtn:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
+
+/* form grid */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fr{margin-bottom:10px;}
+.fr label{display:block;font-size:0.7rem;font-weight:700;color:#A08040;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.fr input,.fr select,.fr textarea{
+  width:100%;padding:10px 13px;
+  border:1.5px solid #EAD880;border-radius:11px;
+  font-family:var(--f-body);font-size:0.9rem;color:var(--dark);
+  background:#FDFAF0;outline:none;transition:border 0.18s,box-shadow 0.18s;
+}
+.fr textarea{resize:vertical;min-height:54px;}
+.fr input:focus,.fr select:focus,.fr textarea:focus{
+  border-color:var(--gold2);background:var(--white);
+  box-shadow:0 0 0 3px rgba(212,160,23,0.08);
+}
+.sec-sep{
+  font-family:var(--f-body);font-size:0.68rem;font-weight:700;
+  color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;
+  margin:16px 0 10px;padding:0 0 7px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;
+}
+
+/* girvi+interest zone */
+.girvi-zone{background:#FFFBF0;border-radius:13px;padding:14px;border:1.5px dashed var(--gold2);margin-bottom:4px;}
+.g-row{display:flex;gap:5px;margin-bottom:7px;align-items:center;flex-wrap:wrap;}
+.g-row input,.g-row select{flex:1;min-width:70px;}
+.g-row .intr-inp{max-width:80px;flex:none;}
+.btn-rm{
+  width:28px;height:28px;border-radius:8px;border:none;
+  background:#FFEBEE;color:var(--red2);cursor:pointer;
+  font-size:0.9rem;font-weight:800;flex-shrink:0;
+}
+.btn-add-g{
+  width:100%;padding:9px;background:transparent;
+  border:1.5px dashed var(--border);border-radius:10px;
+  color:var(--gold);font-weight:700;font-size:0.82rem;cursor:pointer;
+  transition:all 0.18s;font-family:var(--f-body);
+}
+.btn-add-g:hover{background:var(--gold4);border-style:solid;}
+
+/* bill upload */
+.bill-zone{
+  background:#F5F8FF;border-radius:13px;padding:14px;
+  border:1.5px dashed #7EB4F0;margin-bottom:4px;
+  display:flex;align-items:center;gap:12px;cursor:pointer;
+}
+.bill-zone:hover{background:#ECF4FF;}
+.bill-icon{font-size:1.8rem;}
+.bill-text{flex:1;}
+.bill-text p{font-size:0.82rem;font-weight:700;color:#1565C0;}
+.bill-text small{font-size:0.7rem;color:#6B96C8;}
+#billPreview{
+  display:none;max-width:100%;max-height:80px;
+  border-radius:8px;border:1px solid #90CAF9;margin-top:8px;
+}
+
+/* form actions */
+.form-actions{display:flex;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #F0E8C0;}
+.btn-save{
+  flex:1;padding:13px;
+  background:linear-gradient(135deg,#B8860B,#D4A017,#F0C040);
+  color:var(--deep);border:none;border-radius:12px;
+  font-family:var(--f-body);font-size:0.95rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(212,160,23,0.4);transition:all 0.2s;
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,160,23,0.5);}
+.btn-cancel{
+  padding:13px 18px;background:var(--white);color:#B09040;
+  border:1.5px solid var(--border);border-radius:12px;
+  font-family:var(--f-body);font-size:0.9rem;font-weight:600;cursor:pointer;
+  transition:all 0.18s;
+}
+
+/*  CUSTOMER CARDS  */
+.sec-hdr{
+  font-size:0.68rem;font-weight:700;color:var(--gold);
+  text-transform:uppercase;letter-spacing:1px;
+  margin-bottom:12px;display:flex;align-items:center;gap:6px;
+}
+.cust-card{
+  background:var(--white);border-radius:16px;
+  border:1.5px solid var(--border);
+  margin-bottom:10px;box-shadow:var(--shadow);
+  transition:all 0.2s;cursor:pointer;overflow:hidden;
+  animation:slideUp 0.28s ease;
+}
+.cust-card:hover{box-shadow:var(--shadow-md);border-color:var(--gold2);transform:translateY(-1px);}
+.cust-card.expanded{border-color:var(--gold2);box-shadow:var(--shadow-md);}
+.card-top{display:flex;align-items:center;gap:12px;padding:13px 14px;}
+.c-avatar{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  border:2px solid var(--gold2);overflow:hidden;
+  background:var(--gold4);display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:700;font-family:var(--f-display);
+  box-shadow:0 0 0 3px #FFF8E1;
+}
+.c-avatar img{width:100%;height:100%;object-fit:cover;}
+.c-info{flex:1;min-width:0;}
+.c-name{font-family:var(--f-display);font-size:1.08rem;font-weight:600;color:var(--dark);}
+.c-phone{font-size:0.78rem;color:#B09040;margin-top:1px;}
+.c-badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
+.badge{font-size:0.63rem;padding:2px 9px;border-radius:20px;font-weight:700;}
+.b-new{background:#E8F5E9;color:#1B5E20;}
+.b-reg{background:#FFF3E0;color:#BF6000;}
+.b-girvi{background:#FFEBEE;color:var(--red2);border:1px solid #FFCDD2;}
+.b-udhar{background:#FFF8E1;color:var(--gold);border:1px solid var(--border);}
+
+.card-body{display:none;padding:0 14px 14px;animation:slideUp 0.2s ease;}
+.card-body.open{display:block;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;}
+.info-tile{background:var(--gold4);border-radius:10px;padding:9px 11px;border:1px solid #F0E8C0;}
+.info-tile-l{font-size:0.62rem;font-weight:700;color:#B09040;text-transform:uppercase;letter-spacing:0.4px;}
+.info-tile-v{font-size:0.87rem;font-weight:600;color:var(--dark);margin-top:2px;font-family:var(--f-body);}
+.info-tile-v.red{color:var(--red2);}
+.info-tile-v.green{color:var(--green2);}
+
+/* girvi mini table */
+.girvi-mini-hdr{font-size:0.68rem;font-weight:800;color:var(--red2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;}
+.girvi-tbl{width:100%;border-collapse:collapse;font-size:0.78rem;border-radius:10px;overflow:hidden;}
+.girvi-tbl thead tr{background:var(--gold);}
+.girvi-tbl th{color:#fff;padding:7px 8px;text-align:left;font-size:0.68rem;font-weight:700;}
+.girvi-tbl td{padding:6px 8px;border-bottom:1px solid #F0E8C0;font-family:var(--f-body);}
+.girvi-tbl tr:last-child td{border:none;}
+.girvi-tbl tr:nth-child(even) td{background:var(--gold4);}
+.st-active{color:var(--red2);font-weight:700;}
+.st-ret{color:var(--green2);font-weight:700;}
+.intr-tag{background:#FFF3E0;color:#BF6000;border-radius:6px;padding:1px 6px;font-size:0.7rem;font-weight:700;}
+
+/* bill thumb */
+.bill-thumb{max-width:100%;max-height:120px;border-radius:9px;border:1px solid var(--border);margin-top:8px;cursor:pointer;}
+
+/* card actions */
+.card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.btn-act{
+  flex:1;min-width:58px;padding:9px 5px;border-radius:10px;
+  font-family:var(--f-body);font-size:0.73rem;font-weight:700;cursor:pointer;
+  border:1.5px solid;transition:all 0.18s;text-align:center;
+}
+.ba-edit{background:var(--gold4);color:var(--gold);border-color:var(--border);}
+.ba-edit:hover{background:var(--gold);color:#fff;border-color:var(--gold);}
+.ba-pdf{background:#E3F2FD;color:#1565C0;border-color:#90CAF9;}
+.ba-pdf:hover{background:#1565C0;color:#fff;border-color:#1565C0;}
+.ba-gv{background:#FFF3E0;color:#BF6000;border-color:#FFCC80;}
+.ba-gv:hover{background:#BF6000;color:#fff;}
+.ba-del{background:#FFEBEE;color:var(--red2);border-color:#FFCDD2;}
+.ba-del:hover{background:var(--red2);color:#fff;}
+
+/*  GIRVI TAB  */
+.girvi-card{
+  background:var(--white);border-radius:15px;
+  border:1.5px solid #FFCDD2;padding:14px;
+  margin-bottom:10px;box-shadow:var(--shadow);animation:slideUp 0.28s;
+}
+.gc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.gc-av{width:40px;height:40px;border-radius:50%;border:2px solid var(--gold2);
+  background:var(--gold4);display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-size:1rem;font-weight:700;flex-shrink:0;overflow:hidden;}
+.gc-av img{width:100%;height:100%;object-fit:cover;}
+.gc-name{font-family:var(--f-display);font-size:0.97rem;font-weight:600;}
+.gc-sub{font-size:0.74rem;color:#B09040;}
+.g-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.g-chip{padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;border:1.5px solid;}
+.chip-a{background:#FFEBEE;color:var(--red2);border-color:#EF9A9A;}
+.chip-r{background:#E8F5E9;color:var(--green);border-color:#A5D6A7;}
+
+/*  UDHAR TAB  */
+.udhar-card{
+  background:var(--white);border-radius:14px;border:1.5px solid var(--border);
+  padding:14px;margin-bottom:9px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;animation:slideUp 0.28s;
+}
+
+/*  CARE TAB  */
+.care-hero{
+  background:linear-gradient(145deg,var(--deep),var(--dark2));
+  border-radius:18px;padding:26px 20px;margin-bottom:14px;
+  border:1.5px solid #2A1F00;
+  box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
+}
+.care-hero::before{
+  content:'';position:absolute;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,192,64,0.12),transparent 70%);
+  top:-60px;right:-60px;
+}
+.care-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(240,208,64,0.1);border:1px solid rgba(212,160,23,0.25);
+  border-radius:20px;padding:4px 13px;
+  font-size:0.65rem;font-weight:700;color:var(--gold2);
+  letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;
+}
+.care-hero h2{
+  font-family:var(--f-display);font-size:1.7rem;font-weight:700;color:var(--deep);
+  color:var(--gold3);margin-bottom:6px;
+}
+.care-hero p{font-size:0.83rem;color:#7A6030;line-height:1.6;}
+.care-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.care-cta{
+  background:var(--white);border-radius:14px;border:1.5px solid var(--border);
+  padding:16px;box-shadow:var(--shadow);text-align:center;
+  text-decoration:none;display:block;transition:all 0.2s;
+}
+.care-cta:hover{border-color:var(--gold2);box-shadow:var(--shadow-md);transform:translateY(-2px);}
+.care-cta-icon{
+  width:48px;height:48px;border-radius:12px;margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+}
+.cta-call .care-cta-icon{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);}
+.cta-mail .care-cta-icon{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);}
+.care-cta-title{font-size:0.8rem;font-weight:700;color:var(--dark);margin-bottom:3px;}
+.care-cta-val{font-size:0.75rem;color:var(--gold);font-weight:600;word-break:break-all;}
+
+.care-info{background:var(--white);border-radius:14px;border:1.5px solid var(--border);padding:16px;box-shadow:var(--shadow);}
+.cib-title{font-size:0.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;
+  letter-spacing:0.8px;margin-bottom:13px;display:flex;align-items:center;gap:6px;}
+.cib-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F5EDD0;}
+.cib-row:last-child{border:none;padding-bottom:0;}
+.cib-icon{width:38px;height:38px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.cib-l{font-size:0.66rem;color:#B09040;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+.cib-v{font-size:0.9rem;font-weight:700;color:var(--dark);margin-top:1px;font-family:var(--f-body);}
+.cib-btn{
+  padding:7px 14px;border-radius:9px;font-size:0.73rem;font-weight:700;
+  cursor:pointer;border:1.5px solid;text-decoration:none;display:inline-block;
+  font-family:var(--f-body);transition:all 0.18s;
+}
+.cib-btn.call{background:#E8F5E9;color:var(--green);border-color:#A5D6A7;}
+.cib-btn.call:hover{background:var(--green);color:#fff;}
+.cib-btn.mail{background:#E3F2FD;color:#1565C0;border-color:#90CAF9;}
+.cib-btn.mail:hover{background:#1565C0;color:#fff;}
+.care-note{background:var(--gold4);border-radius:13px;padding:14px 18px;border:1px solid var(--border);margin-top:12px;text-align:center;}
+.care-note p{font-size:0.82rem;color:#8B6914;line-height:1.7;}
+
+/*  EMPTY  */
+.empty-state{text-align:center;padding:50px 20px;color:#C0A060;}
+.empty-state .ei{font-size:3rem;margin-bottom:12px;}
+.empty-state p{font-size:0.9rem;font-weight:600;font-family:var(--f-body);}
+
+/*  BOTTOM NAV  */
+#bottomNav{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--deep);
+  border-top:1px solid #2A1F00;
+  display:flex;align-items:stretch;
+  height:64px;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.35);
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;background:transparent;border:none;cursor:pointer;
+  color:#5A4520;transition:all 0.2s;padding:8px 4px 10px;
+  -webkit-tap-highlight-color:transparent;
+}
+.bnav-btn:active{background:rgba(212,160,23,0.08);}
+.bnav-btn.active{ color:var(--gold3); }
+.bnav-btn.active .bnav-icon{ filter:drop-shadow(0 0 5px rgba(240,192,64,0.6)); transform:scale(1.1); }
+.bnav-icon{ font-size:1.3rem; transition:transform 0.2s; }
+.bnav-label{ font-size:0.6rem;font-weight:700;letter-spacing:0.3px;font-family:var(--f-body); }
+.bnav-center{
+  position:relative;
+  flex:1.2;
+}
+.bnav-fab-circle{
+  width:50px;height:50px;border-radius:50%;
+  background:linear-gradient(145deg,#D4A017,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;color:var(--deep);
+  box-shadow:0 4px 18px rgba(212,160,23,0.55);
+  transition:all 0.25s;
+  margin-bottom:2px;
+}
+.bnav-center:active .bnav-fab-circle{ transform:scale(0.92); }
+.bnav-center.form-open .bnav-fab-circle{ transform:rotate(45deg); background:linear-gradient(145deg,#8B0000,#C0392B); }
+
+/*  MODALS  */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.6);z-index:400;
+  align-items:center;justify-content:center;padding:16px;
+  backdrop-filter:blur(3px);
+}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--white);border-radius:20px;padding:24px 18px;
+  width:100%;max-width:360px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:slideUp 0.25s;
+  border:1.5px solid var(--border);
+}
+.modal h3{font-family:var(--f-display);font-size:1.1rem;font-weight:600;margin-bottom:5px;}
+.modal p{color:#A08040;font-size:0.84rem;margin-bottom:16px;line-height:1.5;font-family:var(--f-body);}
+.modal-btns{display:flex;gap:8px;}
+.modal-btns button{
+  flex:1;padding:11px;border-radius:11px;
+  font-family:var(--f-body);font-size:0.9rem;font-weight:700;cursor:pointer;border:none;transition:all 0.18s;
+}
+.mbtn-danger{background:var(--red2);color:#fff;}
+.mbtn-soft{background:var(--gold4);color:var(--gold);border:1.5px solid var(--border) !important;}
+.g-chip-click{cursor:pointer;transition:opacity 0.15s;}
+.g-chip-click:hover{opacity:0.75;}
+
+/*  IMAGE VIEWER  */
+#imgViewer{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.9);z-index:600;
+  align-items:center;justify-content:center;cursor:zoom-out;
+}
+#imgViewer.open{display:flex;}
+#imgViewer img{max-width:94%;max-height:90%;border-radius:12px;box-shadow:0 0 60px rgba(0,0,0,0.5);}
+
+/*  PDF VIEWER  */
+#pdfViewer{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.95);z-index:700;
+  flex-direction:column;align-items:center;
+}
+#pdfViewer.open{display:flex;}
+.pdf-toolbar{
+  width:100%;background:#1A1200;padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(212,160,23,0.25);
+  flex-shrink:0;
+}
+.pdf-toolbar-title{
+  flex:1;font-family:'DM Sans',sans-serif;font-size:0.85rem;
+  font-weight:600;color:var(--gold3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pdf-nav-btn{
+  background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.3);
+  color:var(--gold3);border-radius:8px;padding:6px 12px;
+  font-family:'DM Sans',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;
+  transition:all 0.18s;flex-shrink:0;
+}
+.pdf-nav-btn:hover{background:rgba(212,160,23,0.25);}
+.pdf-nav-btn:disabled{opacity:0.35;cursor:not-allowed;}
+.pdf-page-info{
+  font-size:0.78rem;color:#B09040;font-family:'DM Sans',sans-serif;
+  white-space:nowrap;flex-shrink:0;
+}
+.pdf-close-btn{
+  background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);
+  color:#FF8A80;border-radius:8px;padding:6px 14px;
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:700;cursor:pointer;flex-shrink:0;
+}
+.pdf-canvas-wrap{
+  flex:1;width:100%;overflow-y:auto;overflow-x:hidden;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:12px 0;background:#2C2C2C;
+}
+#pdfCanvas{
+  max-width:100%;border-radius:4px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.6);
+}
+.pdf-loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:12px;color:var(--gold3);font-family:'DM Sans',sans-serif;font-size:0.9rem;
+  padding:40px;
+}
+.pdf-spinner{
+  width:36px;height:36px;border:3px solid rgba(212,160,160,0.2);
+  border-top-color:var(--gold2);border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/*  TOAST  */
+.toast{
+  position:fixed;bottom:76px;left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:var(--deep);color:var(--gold3);
+  padding:10px 24px;border-radius:30px;
+  font-family:var(--f-body);font-size:0.84rem;font-weight:600;
+  opacity:0;transition:all 0.28s;z-index:500;
+  box-shadow:0 6px 24px rgba(0,0,0,0.4);white-space:nowrap;
+  border:1px solid rgba(212,160,23,0.2);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+mark{background:#FFF0A0;color:#8B6914;border-radius:3px;padding:0 2px;}
+
+/* ---- DESKTOP TOP BAR ---- */
+#desktopBar{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#0E0B02,#1A1200);
+  border-bottom:1px solid rgba(212,160,23,0.3);
+  padding:9px 16px;
+  cursor:pointer;
+  transition:background 0.2s;
+  -webkit-tap-highlight-color:transparent;
+  position:sticky;top:0;z-index:310;
+}
+#desktopBar:active{background:#1A1200;}
+.dtb-icon{font-size:1rem;flex-shrink:0;}
+.dtb-text{
+  flex:1;font-size:0.78rem;font-weight:700;
+  color:var(--gold3);letter-spacing:0.3px;
+  font-family:var(--f-body);
+}
+.dtb-arrow{
+  font-size:1.2rem;color:var(--gold2);font-weight:700;
+  transition:transform 0.2s;
+}
+#desktopBar:active .dtb-arrow{transform:translateX(3px);}
+
+/* ---- DESKTOP PAGE OVERLAY ---- */
+#desktopPage{
+  position:fixed;inset:0;z-index:9500;
+  background:var(--cream);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden;
+}
+#desktopPage.open{transform:translateX(0);}
+
+.dpage-header{
+  background:var(--deep);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid #2A1F00;
+  flex-shrink:0;
+}
+.dpage-back{
+  background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.25);
+  color:var(--gold3);border-radius:10px;padding:7px 14px;
+  font-family:var(--f-body);font-size:0.88rem;font-weight:700;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.dpage-back:active{background:rgba(212,160,23,0.25);}
+.dpage-title{
+  font-family:var(--f-display);font-size:1.1rem;font-weight:600;color:var(--gold3);
+}
+
+.dpage-body{
+  flex:1;overflow-y:auto;padding:20px 16px 40px;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+.dpage-hero{
+  background:linear-gradient(145deg,var(--deep),#1A1200);
+  border-radius:20px;padding:28px 20px;text-align:center;
+  border:1.5px solid #2A1F00;
+  box-shadow:0 8px 30px rgba(0,0,0,0.2);
+}
+.dpage-hero-icon{font-size:3rem;margin-bottom:12px;}
+.dpage-hero-title{
+  font-family:var(--f-display);font-size:1.7rem;font-weight:700;
+  color:var(--gold3);margin-bottom:8px;
+}
+.dpage-hero-sub{font-size:0.85rem;color:#7A6030;line-height:1.6;}
+
+.dpage-url-box{
+  background:var(--white);border-radius:16px;padding:16px;
+  border:1.5px solid var(--border);box-shadow:var(--shadow);
+}
+.dpage-url-label{font-size:0.65rem;font-weight:700;color:#B09040;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.dpage-url-row{display:flex;align-items:center;gap:10px;}
+.dpage-url-text{
+  flex:1;font-size:0.78rem;color:var(--dark);font-weight:600;
+  word-break:break-all;line-height:1.5;
+  background:var(--gold4);border-radius:10px;padding:10px 12px;
+  border:1px solid var(--border);font-family:monospace;
+}
+.dpage-copy-btn{
+  flex-shrink:0;padding:10px 14px;
+  background:linear-gradient(135deg,#B8860B,#F0C040);
+  border:none;border-radius:12px;
+  color:var(--deep);font-family:var(--f-body);
+  font-size:0.82rem;font-weight:800;cursor:pointer;
+  white-space:nowrap;
+  box-shadow:0 3px 12px rgba(212,160,23,0.4);
+  -webkit-tap-highlight-color:transparent;
+}
+.dpage-copy-btn:active{transform:scale(0.95);}
+
+.dpage-steps{
+  background:var(--white);border-radius:16px;padding:16px;
+  border:1.5px solid var(--border);box-shadow:var(--shadow);
+}
+.dpage-step-title{font-size:0.68rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;}
+.dpage-step{display:flex;align-items:flex-start;gap:12px;margin-bottom:13px;}
+.dpage-step:last-child{margin-bottom:0;}
+.dstep-num{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#B8860B,#D4A017);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.82rem;font-weight:800;color:var(--deep);
+}
+.dstep-text{font-size:0.84rem;color:#5A4520;line-height:1.55;padding-top:4px;}
+.dstep-text strong{color:var(--dark);}
+
+.dpage-features{
+  background:var(--white);border-radius:16px;padding:16px;
+  border:1.5px solid var(--border);box-shadow:var(--shadow);
+}
+.dpage-feat-title{font-size:0.68rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.dpage-feat{font-size:0.85rem;color:#5A4520;padding:7px 0;border-bottom:1px solid #F5EDD0;display:flex;align-items:center;gap:8px;}
+.dpage-feat:last-child{border:none;padding-bottom:0;}
+.dpage-feat span{font-size:1rem;}
+
+.dpage-open-btn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,#B8860B,#F0C040);
+  border:none;border-radius:14px;
+  color:var(--deep);font-family:var(--f-body);
+  font-size:0.95rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(212,160,23,0.4);
+  -webkit-tap-highlight-color:transparent;
+}
+.dpage-open-btn:active{transform:scale(0.98);}
+.dpage-share-btn{
+  width:100%;padding:15px;
+  background:linear-gradient(135deg,#1B5E20,#27AE60);
+  border:none;border-radius:14px;
+  color:#fff;font-family:var(--f-body);
+  font-size:0.95rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(27,94,32,0.35);
+  -webkit-tap-highlight-color:transparent;
+}
+.dpage-share-btn:active{transform:scale(0.98);}
+
+.dpage-note{
+  background:var(--gold4);border:1px solid var(--border);
+  border-radius:13px;padding:13px 16px;
+  font-size:0.8rem;color:#8B6914;line-height:1.6;text-align:center;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+/*  LOGIN SCREEN  */
+#loginScreen{
+  position:fixed;inset:0;z-index:8000;
+  background:var(--deep);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:24px;
+}
+#loginScreen.hidden{display:none;}
+.login-box{
+  width:100%;max-width:380px;
+  background:rgba(255,248,220,0.04);
+  border:1.5px solid rgba(212,160,23,0.2);
+  border-radius:22px;padding:32px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.login-logo{
+  width:72px;height:72px;border-radius:18px;
+  background:linear-gradient(145deg,#F0C040,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;
+  color:#1A1200;margin:0 auto 16px;
+  box-shadow:0 0 40px rgba(240,192,64,0.35);
+}
+.login-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;
+  color:var(--gold3);text-align:center;margin-bottom:4px;
+}
+.login-sub{font-size:0.72rem;color:#5A4520;letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:24px;}
+.login-tabs{display:flex;gap:0;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:22px;border:1px solid rgba(212,160,23,0.15);}
+.ltab{
+  flex:1;padding:9px;border-radius:9px;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;
+  color:#6A5020;cursor:pointer;transition:all 0.2s;
+}
+.ltab.active{background:linear-gradient(135deg,#B8860B,#D4A017);color:#1A1200;font-weight:700;}
+.lfield{margin-bottom:13px;}
+.lfield label{display:block;font-size:0.68rem;font-weight:700;color:#A08040;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;}
+.lfield input{
+  width:100%;padding:11px 14px;
+  border:1.5px solid rgba(212,160,23,0.25);border-radius:11px;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;
+  background:rgba(255,248,220,0.06);color:#F0E8C0;outline:none;
+  transition:border 0.2s,box-shadow 0.2s;
+}
+.lfield input::placeholder{color:#4A3810;}
+.lfield input:focus{border-color:var(--gold2);box-shadow:0 0 0 3px rgba(212,160,23,0.12);}
+.btn-login{
+  width:100%;padding:13px;margin-top:6px;
+  background:linear-gradient(135deg,#B8860B,#D4A017,#F0C040);
+  border:none;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:0.96rem;font-weight:700;
+  color:var(--deep);cursor:pointer;
+  box-shadow:0 4px 18px rgba(212,160,23,0.4);
+  transition:all 0.2s;
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(212,160,23,0.5);}
+.login-err{
+  background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);
+  border-radius:9px;padding:9px 13px;margin-bottom:12px;
+  font-size:0.82rem;color:#FF8A80;text-align:center;display:none;
+}
+.login-err.show{display:block;}
+.login-foot{margin-top:18px;text-align:center;font-size:0.75rem;color:#4A3810;}
+.login-foot a{color:var(--gold2);text-decoration:none;}
+
+/*  USER MENU  */
+.user-pill{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.2);
+  border-radius:20px;padding:5px 12px 5px 6px;cursor:pointer;
+  transition:all 0.18s;
+}
+.user-pill:hover{background:rgba(212,160,23,0.18);}
+.user-av{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#D4A017,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-weight:700;color:#1A1200;
+}
+.user-name{font-size:0.75rem;font-weight:700;color:var(--gold3);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.user-menu{
+  position:absolute;top:62px;right:14px;z-index:400;
+  background:var(--dark);border:1.5px solid rgba(212,160,23,0.2);
+  border-radius:14px;padding:8px;min-width:180px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  display:none;animation:slideUp 0.2s ease;
+}
+.user-menu.open{display:block;}
+.umenu-head{padding:10px 12px 8px;border-bottom:1px solid rgba(212,160,23,0.12);margin-bottom:6px;}
+.umenu-uname{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--gold3);}
+.umenu-email{font-size:0.7rem;color:#5A4520;margin-top:1px;word-break:break-all;}
+.umenu-item{
+  display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;
+  font-size:0.82rem;font-weight:600;color:#C0A060;cursor:pointer;
+  transition:background 0.15s;
+}
+.umenu-item:hover{background:rgba(212,160,23,0.1);}
+.umenu-item.danger{color:#FF8A80;}
+.umenu-item.danger:hover{background:rgba(192,57,43,0.15);}
+.umenu-sep{height:1px;background:rgba(212,160,23,0.12);margin:6px 0;}
+
+/*  BACKUP MODAL  */
+#backupModal .modal{max-width:340px;}
+.backup-opt{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;border-radius:12px;
+  border:1.5px solid var(--border);background:var(--gold4);
+  cursor:pointer;transition:all 0.18s;margin-bottom:10px;
+}
+.backup-opt:hover{background:#FFF0C0;border-color:var(--gold2);}
+.backup-opt-icon{font-size:1.6rem;flex-shrink:0;}
+.backup-opt-text p{font-size:0.86rem;font-weight:700;color:var(--dark);margin-bottom:2px;}
+.backup-opt-text small{font-size:0.72rem;color:#B09040;}
+.backup-success{background:#E8F5E9;border:1.5px solid #A5D6A7;border-radius:10px;padding:10px 14px;font-size:0.83rem;color:#1B5E20;font-weight:700;text-align:center;display:none;margin-bottom:10px;}
+
+/* ---- Install Banner (mobile top bar) ---- */
+#installBanner{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--deep);
+  border-top:1px solid rgba(212,160,23,0.25);
+  padding:12px 16px;
+  z-index:350;
+  align-items:center;
+  gap:10px;
+}
+#installBanner.show{ display:flex; }
+.install-banner-text{ flex:1; font-size:0.82rem; color:#C0A060; font-weight:600; }
+.install-banner-text small{ display:block; font-size:0.7rem; color:#5A4520; }
+.install-banner-btn{
+  padding:9px 18px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#B8860B,#F0C040);
+  color:var(--deep);font-weight:700;font-size:0.85rem;cursor:pointer;
+  white-space:nowrap;
+}
+.install-banner-close{
+  background:none;border:none;color:#5A4520;font-size:1.2rem;cursor:pointer;padding:4px 8px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- PWA INSTALL BANNER (mobile) -->
+<div id="installBanner">
+  <div class="install-banner-text">
+    📲 App Install करें
+    <small>Home Screen पर add करें — offline भी काम करेगी</small>
+  </div>
+  <button class="install-banner-btn" onclick="triggerInstall()">Install करें</button>
+  <button class="install-banner-close" onclick="dismissInstallBanner()">✕</button>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">K</div>
+    <div class="login-title">Kanchan Jwellers</div>
+    <div class="login-sub">Gold · Silver</div>
+    <div class="login-tabs">
+      <button class="ltab active" id="ltab-login" onclick="switchLoginTab('login')"> Login</button>
+      <button class="ltab" id="ltab-register" onclick="switchLoginTab('register')"> Register</button>
+    </div>
+    <div id="loginErr" class="login-err"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="lfield"><label>Username</label><input type="text" id="lUser" placeholder="अपना username डालें" autocomplete="username"></div>
+      <div class="lfield"><label>Password</label><input type="password" id="lPass" placeholder="Password" autocomplete="current-password"></div>
+      <button class="btn-login" onclick="doLogin()"> Login करें</button>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none;">
+      <div class="lfield"><label>Shop / Owner Name</label><input type="text" id="rName" placeholder="जैसे: Arjav Jain"></div>
+      <div class="lfield"><label>Username</label><input type="text" id="rUser" placeholder="अपना username बनाएं" autocomplete="new-username"></div>
+      <div class="lfield"><label>Password</label><input type="password" id="rPass" placeholder="Password बनाएं" autocomplete="new-password"></div>
+      <div class="lfield"><label>Confirm Password</label><input type="password" id="rPass2" placeholder="Password दोबारा डालें"></div>
+      <button class="btn-login" onclick="doRegister()"> Account बनाएं</button>
+    </div>
+
+    <div class="login-foot">किसी समस्या के लिए: <a href="mailto:arjavjain303@gmail.com">arjavjain303@gmail.com</a></div>
+
+  </div>
+</div>
+
+
+<!-- WELCOME SPLASH -->
+<div id="splash">
+  <div class="splash-logo">K</div>
+  <div class="splash-title">Kanchan Jwellers</div>
+  <div class="splash-sub">Gold · Silver</div>
+  <div class="splash-line"></div>
+  <div class="splash-msg">
+    <p> <strong style="color:#F0C040;">आपका स्वागत है!</strong><br><br>
+    किसी भी समस्या के लिए संपर्क करें:<br>
+    <a href="mailto:arjavjain303@gmail.com">arjavjain303@gmail.com</a></p>
+  </div>
+  <button class="splash-btn" onclick="closeSplash()"> शुरू करें</button>
+</div>
+
+<!-- DESKTOP TOP BAR -->
+<div id="desktopBar" onclick="openDesktopPage()">
+  <span class="dtb-icon">🖥️</span>
+  <span class="dtb-text">Desktop Version</span>
+  <span class="dtb-arrow">›</span>
+</div>
+
+<!-- DESKTOP PAGE OVERLAY -->
+<div id="desktopPage">
+  <div class="dpage-header">
+    <button class="dpage-back" onclick="closeDesktopPage()">‹ वापस</button>
+    <div class="dpage-title">Desktop Mode</div>
+    <div style="width:60px;"></div>
+  </div>
+
+  <div class="dpage-body">
+    <div class="dpage-hero">
+      <div class="dpage-hero-icon">🖥️</div>
+      <h2 class="dpage-hero-title">Desktop पर Switch करें</h2>
+      <p class="dpage-hero-sub">बेहतर experience के लिए इस app को computer browser में खोलें</p>
+    </div>
+
+    <div class="dpage-url-box">
+      <div class="dpage-url-label">इस App का URL</div>
+      <div class="dpage-url-row">
+        <div class="dpage-url-text" id="dpageUrl">—</div>
+        <button class="dpage-copy-btn" onclick="copyDesktopUrl()">📋 Copy</button>
+      </div>
+    </div>
+
+    <div class="dpage-steps">
+      <div class="dpage-step-title">Computer पर कैसे खोलें?</div>
+      <div class="dpage-step">
+        <div class="dstep-num">1</div>
+        <div class="dstep-text">ऊपर <strong>Copy</strong> button दबाएं — URL copy हो जाएगी</div>
+      </div>
+      <div class="dpage-step">
+        <div class="dstep-num">2</div>
+        <div class="dstep-text">अपने <strong>Computer का Browser</strong> खोलें (Chrome, Firefox, Edge)</div>
+      </div>
+      <div class="dpage-step">
+        <div class="dstep-num">3</div>
+        <div class="dstep-text">Address bar में URL <strong>Paste करें</strong> (Ctrl+V) और Enter दबाएं</div>
+      </div>
+      <div class="dpage-step">
+        <div class="dstep-num">4</div>
+        <div class="dstep-text">वही Login करें — सारा data <strong>automatically sync</strong> होगा</div>
+      </div>
+    </div>
+
+    <div class="dpage-features">
+      <div class="dpage-feat-title">Desktop पर क्या बेहतर होगा?</div>
+      <div class="dpage-feat"><span>✅</span> बड़ी screen पर पूरा layout दिखेगा</div>
+      <div class="dpage-feat"><span>✅</span> Sidebar से fast navigation</div>
+      <div class="dpage-feat"><span>✅</span> 2-column customer grid</div>
+      <div class="dpage-feat"><span>✅</span> Keyboard shortcuts (/, N, 1-4)</div>
+      <div class="dpage-feat"><span>✅</span> PDF बड़ी screen पर देखें</div>
+    </div>
+
+    <button class="dpage-open-btn" onclick="openDesktopDirect()">
+      🖥️ Desktop Version खोलें (New Tab)
+    </button>
+    <button class="dpage-share-btn" onclick="shareDesktopUrl()">
+      🔗 URL Share करें (WhatsApp / Email)
+    </button>
+
+    <div class="dpage-note">
+      💡 Data Firebase में save है — किसी भी device पर login करने पर same data मिलेगा
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="header-row">
+      <div class="logo-mark" style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;color:#1A1200;">K</div>
+      <div class="brand-col">
+        <div class="brand-name">Kanchan Jwellers</div>
+        <div class="brand-sub">Gold · Silver</div>
+      </div>
+      <div class="h-pills" style="align-items:center;">
+        <div class="hpill"><div class="hpill-n" id="hTotal">0</div><span class="hpill-l">Customers</span></div>
+        <div class="hpill"><div class="hpill-n" id="hGirvi">0</div><span class="hpill-l">Girvi</span></div>
+        <div class="user-pill" onclick="toggleUserMenu()" id="userPill">
+          <div class="user-av" id="userAv">?</div>
+          <div class="user-name" id="userPillName">User</div>
+        </div>
+      </div>
+      <!-- USER MENU -->
+      <div class="user-menu" id="userMenu">
+        <div class="umenu-head">
+          <div class="umenu-uname" id="menuUname">—</div>
+          <div class="umenu-email" id="menuUemail">—</div>
+        </div>
+        <div class="umenu-item" onclick="closeUserMenu()">🏠 Dashboard</div>
+        <div class="umenu-sep"></div>
+        <div class="umenu-item" onclick="closeUserMenu();openBackupModal()">💾 Backup / Restore</div>
+        <div class="umenu-item" id="menuInstallBtn" onclick="triggerInstall()" style="display:none;">💻 App Install करें</div>
+        <div class="umenu-sep"></div>
+        <div class="umenu-item danger" onclick="doLogout()">🚪 Logout</div>
+      </div>
+    </div>
+    <div class="gold-bar"></div>
+  </div>
+</header>
+
+<!-- BOTTOM NAV (mobile) -->
+<nav id="bottomNav">
+  <button class="bnav-btn active" id="bnav-customers" onclick="switchTab('customers','bnav-customers')">
+    <span class="bnav-icon">👥</span>
+    <span class="bnav-label">Customers</span>
+  </button>
+  <button class="bnav-btn" id="bnav-girvi" onclick="switchTab('girvi','bnav-girvi')">
+    <span class="bnav-icon">💍</span>
+    <span class="bnav-label">Girvi</span>
+  </button>
+  <button class="bnav-btn bnav-center" id="bnav-add" onclick="toggleForm()">
+    <span class="bnav-fab-circle">➕</span>
+    <span class="bnav-label">Add</span>
+  </button>
+  <button class="bnav-btn" id="bnav-udhar" onclick="switchTab('udhar','bnav-udhar')">
+    <span class="bnav-icon">💰</span>
+    <span class="bnav-label">उधार</span>
+  </button>
+  <button class="bnav-btn" id="bnav-care" onclick="switchTab('care','bnav-care')">
+    <span class="bnav-icon">📞</span>
+    <span class="bnav-label">Care</span>
+  </button>
+</nav>
+
+<main>
+  <div class="search-box">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="नाम, फ़ोन, शहर से खोजें..." oninput="handleSearch(this)">
+    <button class="clr-btn" id="clearBtn" onclick="clearSearch()">✕</button>
+  </div>
+  <div id="cityFilterWrap">
+    <div id="cityChips"></div>
+  </div>
+  <div class="stat-strip">
+    <div class="stat-card"><div class="stat-n" id="sTotal">0</div><div class="stat-l">कुल</div></div>
+    <div class="stat-card"><div class="stat-n" id="sNew">0</div><div class="stat-l">New</div></div>
+    <div class="stat-card"><div class="stat-n" id="sGirvi" style="color:var(--red2)">0</div><div class="stat-l">Girvi</div></div>
+    <div class="stat-card"><div class="stat-n" id="sUdhar" style="color:var(--gold)">₹0</div><div class="stat-l">उधार</div></div>
+  </div>
+
+  <!-- ADD/EDIT FORM -->
+  <div class="form-card" id="formCard">
+    <div class="form-header">
+      <span class="form-header-title" id="formTitle"> नया Customer जोड़ें</span>
+      <button onclick="hideForm()" style="background:none;border:none;color:#6A5020;cursor:pointer;font-size:1.1rem;"></button>
+    </div>
+    <div class="form-body">
+      <input type="hidden" id="editId">
+
+      <!-- Photo -->
+      <div class="photo-row">
+        <div class="photo-circle" id="photoCircle" onclick="document.getElementById('photoInput').click()">
+          <span id="photoPlaceholder"></span>
+          <img id="photoImg" src="" alt="" style="display:none;">
+        </div>
+        <div>
+          <p style="font-size:0.78rem;color:#B09040;font-weight:600;margin-bottom:7px;">Customer की Photo</p>
+          <div style="display:flex;gap:6px;">
+            <button class="pbtn" onclick="document.getElementById('photoInput').click()"> Upload</button>
+            <button class="pbtn" id="rmPhotoBtn" onclick="removePhoto()" style="display:none"> हटाएं</button>
+          </div>
+        </div>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)" style="display:none">
+
+      <!-- Bill upload -->
+      <div class="sec-sep"> Bill / Document</div>
+      <div class="bill-zone" onclick="document.getElementById('billInput').click()">
+        <div class="bill-icon"></div>
+        <div class="bill-text">
+          <p id="billLabel">Bill या Document Upload करें</p>
+          <small>Photo या PDF file</small>
+        </div>
+        <button class="pbtn" id="rmBillBtn" onclick="removeBill(event)" style="display:none"></button>
+      </div>
+      <img id="billPreview" src="" alt="Bill Preview">
+      <input type="file" id="billInput" accept="image/*,.pdf" onchange="handleBill(this)" style="display:none">
+
+      <div class="sec-sep"> Basic Info</div>
+      <div class="fg">
+        <div class="fr"><label>नाम *</label><input type="text" id="fName" placeholder="पूरा नाम"></div>
+        <div class="fr"><label>फ़ोन *</label><input type="tel" id="fPhone" placeholder="मोबाइल नंबर"></div>
+        <div class="fr"><label>शहर / पता</label><input type="text" id="fCity" placeholder="शहर"></div>
+        <div class="fr"><label>Type</label>
+          <select id="fType">
+            <option value="Regular">Regular</option>
+            <option value="New">New </option>
+          </select>
+        </div>
+        <div class="fr"><label>उधार (₹)</label><input type="number" id="fUdhar" placeholder="0" min="0"></div>
+        <div class="fr"><label>ID Number</label><input type="text" id="fId" placeholder="Aadhar / PAN"></div>
+      </div>
+      <div class="fr"><label> नोट</label><textarea id="fNote" placeholder="कुछ भी नोट करें..."></textarea></div>
+
+      <div class="sec-sep"> Girvi Items (+ ब्याज)</div>
+      <div class="girvi-zone">
+        <div style="display:grid;grid-template-columns:2fr 1fr 0.8fr 0.8fr 24px;gap:4px;margin-bottom:5px;padding:0 2px;">
+          <span style="font-size:0.62rem;font-weight:700;color:#B09040;text-transform:uppercase;">Item</span>
+          <span style="font-size:0.62rem;font-weight:700;color:#B09040;text-transform:uppercase;">₹ रकम</span>
+          <span style="font-size:0.62rem;font-weight:700;color:#B09040;text-transform:uppercase;">ब्याज%</span>
+          <span style="font-size:0.62rem;font-weight:700;color:#B09040;text-transform:uppercase;">Status</span>
+          <span></span>
+        </div>
+        <div id="girviRows"></div>
+        <button class="btn-add-g" onclick="addGirviRow()"> Girvi Item जोड़ें</button>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-save" onclick="saveCustomer()"> Save करें</button>
+        <button class="btn-cancel" onclick="hideForm()">रद्द करें</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="contentArea"></div>
+</main>
+
+
+
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="deleteModal">
+  <div class="modal">
+    <h3> हटाना है?</h3>
+    <p>इस customer का सारा data हमेशा के लिए हट जाएगा।</p>
+    <div class="modal-btns">
+      <button class="mbtn-danger" onclick="confirmDelete()">हाँ, हटाओ</button>
+      <button class="mbtn-soft" onclick="closeDeleteModal()">नहीं, रखो</button>
+    </div>
+  </div>
+</div>
+
+<!-- GIRVI STATUS MODAL -->
+<div class="overlay" id="girviModal">
+  <div class="modal">
+    <h3> Girvi Status</h3>
+    <p>Item tap करके status change करें:</p>
+    <div id="girviStatusList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+    <div class="modal-btns">
+      <button class="mbtn-soft" onclick="closeGirviModal()">बंद करें</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE VIEWER -->
+<div id="imgViewer" onclick="closeImgViewer()">
+  <img id="viewerImg" src="" alt="">
+</div>
+
+<!-- PDF VIEWER -->
+<div id="pdfViewer">
+  <div class="pdf-toolbar">
+    <button class="pdf-close-btn" onclick="closePdfViewer()"> बंद करें</button>
+    <div class="pdf-toolbar-title" id="pdfTitle">PDF</div>
+    <button class="pdf-nav-btn" id="pdfPrev" onclick="pdfChangePage(-1)"> Prev</button>
+    <span class="pdf-page-info" id="pdfPageInfo">1 / 1</span>
+    <button class="pdf-nav-btn" id="pdfNext" onclick="pdfChangePage(1)">Next </button>
+    <button class="pdf-nav-btn" id="pdfShareBtn" onclick="sharePdfFromViewer()" style="background:linear-gradient(135deg,#1B5E20,#27AE60);color:#fff;border:none;padding:7px 13px;border-radius:10px;font-size:0.78rem;font-weight:700;cursor:pointer;"> Share</button>
+  </div>
+  <div class="pdf-canvas-wrap" id="pdfCanvasWrap">
+    <div class="pdf-loading" id="pdfLoading">
+      <div class="pdf-spinner"></div>
+      <span>PDF load हो रहा है...</span>
+    </div>
+    <canvas id="pdfCanvas" style="display:none;"></canvas>
+  </div>
+</div>
+
+<!-- BACKUP / RESTORE MODAL -->
+<div class="overlay" id="backupModal">
+  <div class="modal">
+    <h3> Backup & Restore</h3>
+    <p>अपना data save करें या पुराना data वापस लाएं।</p>
+    <div class="backup-success" id="backupSuccess"></div>
+    
+    <div class="backup-opt" onclick="exportBackup()">
+      <div class="backup-opt-icon"></div>
+      <div class="backup-opt-text">
+        <p>Data Export करें (File)</p>
+        <small>सारा data एक .json file में download करें</small>
+      </div>
+    </div>
+    
+    <div class="backup-opt" onclick="document.getElementById('importFileInput').click()">
+      <div class="backup-opt-icon"></div>
+      <div class="backup-opt-text">
+        <p>Data Import करें (File)</p>
+        <small>पुरानी backup file से data restore करें</small>
+      </div>
+    </div>
+    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importBackup(this)">
+
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:10px 0;"></div>
+    <div style="font-size:0.68rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;"> Local Device Backup</div>
+
+    <div class="backup-opt" onclick="saveToLocal()">
+      <div class="backup-opt-icon"></div>
+      <div class="backup-opt-text">
+        <p>Local में Save करें</p>
+        <small>Device पर data store करें (बिना internet भी काम करेगा)</small>
+      </div>
+    </div>
+
+    <div class="backup-opt" onclick="loadFromLocal()">
+      <div class="backup-opt-icon"></div>
+      <div class="backup-opt-text">
+        <p>Local से Restore करें</p>
+        <small>Device पर save किया हुआ data वापस लाएं</small>
+      </div>
+    </div>
+
+    <div id="localBackupInfo" style="display:none;margin-top:8px;padding:9px 12px;background:#E8F5E9;border-radius:10px;font-size:0.78rem;color:#1B5E20;font-weight:600;"></div>
+    
+    <div class="modal-btns" style="margin-top:8px;">
+      <button class="mbtn-soft" onclick="closeBackupModal()">बंद करें</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF ACTION MODAL -->
+<div class="overlay" id="pdfActionModal">
+  <div class="modal" style="max-width:320px;">
+    <h3> PDF — <span id="pdfActionTitle"></span></h3>
+    <p>क्या करना है इस PDF के साथ?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+      <button onclick="pdfActionDownload()" style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff;font-family:var(--f-body);font-size:0.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+         Download करें
+      </button>
+      <button onclick="pdfActionShare()" style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#1B5E20,#27AE60);color:#fff;font-family:var(--f-body);font-size:0.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+         Share करें (WhatsApp, Email...)
+      </button>
+      <button onclick="pdfActionView()" style="padding:13px;border-radius:12px;border:1.5px solid var(--border);background:var(--gold4);color:var(--gold);font-family:var(--f-body);font-size:0.92rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+         Preview देखें
+      </button>
+    </div>
+    <button onclick="closePdfActionModal()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:#B09040;font-family:var(--f-body);font-size:0.88rem;font-weight:600;cursor:pointer;">रद्द करें</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+//  AUTH SYSTEM (Firebase Realtime DB) 
+let currentUser = null;
+let dbListener = null;
+
+//  session: localStorage sirf session ke liye (not data) 
+function getSession(){ return JSON.parse(localStorage.getItem('kj_session') || 'null'); }
+function setSession(u){ localStorage.setItem('kj_session', JSON.stringify(u)); }
+function clearSession(){ localStorage.removeItem('kj_session'); }
+
+function switchLoginTab(tab){
+  document.getElementById('loginForm').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('ltab-login').classList.toggle('active', tab==='login');
+  document.getElementById('ltab-register').classList.toggle('active', tab==='register');
+  document.getElementById('loginErr').classList.remove('show');
+}
+function showLoginErr(msg){ const e=document.getElementById('loginErr'); e.textContent=msg; e.classList.add('show'); }
+
+function doLogin(){
+  const user = document.getElementById('lUser').value.trim().toLowerCase();
+  const pass = document.getElementById('lPass').value;
+  if(!user || !pass){ showLoginErr(' Username और Password डालें'); return; }
+
+  const btn = document.querySelector('#loginForm .btn-login');
+  btn.textContent = ' लॉगिन हो रहा है...'; btn.disabled = true;
+
+  db.ref('accounts/' + user).once('value').then(snap => {
+    btn.textContent = ' Login करें'; btn.disabled = false;
+    const acc = snap.val();
+    if(!acc){ showLoginErr(' यह account नहीं मिला'); return; }
+    if(acc.password !== btoa(pass)){ showLoginErr(' Password गलत है'); return; }
+    currentUser = { username: user, name: acc.name };
+    setSession(currentUser);
+    enterApp();
+  }).catch(err => {
+    btn.textContent = ' Login करें'; btn.disabled = false;
+    showLoginErr(' Network error: ' + err.message);
+  });
+}
+
+function doRegister(){
+  const name = document.getElementById('rName').value.trim();
+  const user = document.getElementById('rUser').value.trim().toLowerCase();
+  const pass = document.getElementById('rPass').value;
+  const pass2 = document.getElementById('rPass2').value;
+  if(!name || !user || !pass){ showLoginErr(' सब fields भरें'); return; }
+  if(pass !== pass2){ showLoginErr(' Password match नहीं हुआ'); return; }
+  if(pass.length < 4){ showLoginErr(' Password कम से कम 4 characters का हो'); return; }
+  if(!/^[a-z0-9_]+$/.test(user)){ showLoginErr(' Username में केवल a-z, 0-9, _ allowed है'); return; }
+
+  const btn = document.querySelector('#registerForm .btn-login');
+  btn.textContent = ' बन रहा है...'; btn.disabled = true;
+
+  db.ref('accounts/' + user).once('value').then(snap => {
+    if(snap.exists()){ showLoginErr(' यह username पहले से लिया हुआ है'); btn.textContent=' Account बनाएं'; btn.disabled=false; return; }
+    return db.ref('accounts/' + user).set({ name, password: btoa(pass) }).then(() => {
+      btn.textContent = ' Account बनाएं'; btn.disabled = false;
+      currentUser = { username: user, name };
+      setSession(currentUser);
+      enterApp();
+    });
+  }).catch(err => {
+    btn.textContent = ' Account बनाएं'; btn.disabled = false;
+    showLoginErr(' Error: ' + err.message);
+  });
+}
+
+function doLogout(){
+  if(dbListener){ dbListener(); dbListener = null; }
+  clearSession();
+  currentUser = null;
+  customers = [];
+  closeUserMenu();
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('lUser').value = '';
+  document.getElementById('lPass').value = '';
+  document.getElementById('loginErr').classList.remove('show');
+  switchLoginTab('login');
+  showToast(' Logout हो गए');
+}
+
+
+function enterApp(){
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.body.classList.add('app-ready');
+  const init = (currentUser.name||'U').trim().split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('userAv').textContent = init;
+  document.getElementById('userPillName').textContent = currentUser.name.split(' ')[0];
+  document.getElementById('menuUname').textContent = currentUser.name;
+  document.getElementById('menuUemail').textContent = '@' + currentUser.username;
+
+  // Firebase Realtime DB listener
+  const ref = db.ref('data/' + currentUser.username);
+  if(dbListener){ dbListener(); }
+  dbListener = ref.on('value', snap => {
+    const val = snap.val();
+    customers = val ? Object.values(val) : [];
+    if(!customers.length) addSampleData();
+    else render();
+  }, err => {
+    showToast('⚠️ DB Error: ' + err.message);
+  });
+}
+
+function toggleUserMenu(){
+  document.getElementById('userMenu').classList.toggle('open');
+}
+function closeUserMenu(){
+  document.getElementById('userMenu').classList.remove('open');
+}
+// Close menu on outside click
+document.addEventListener('click', function(e){
+  const pill = document.getElementById('userPill');
+  const menu = document.getElementById('userMenu');
+  if(menu && !pill.contains(e.target) && !menu.contains(e.target)){
+    menu.classList.remove('open');
+  }
+});
+
+function addSampleData(){
+  customers=[
+    {id:1,name:'Radha Sharma',phone:'9876543210',city:'Delhi',udhar:5000,type:'Regular',idNo:'ABCPS1234X',note:'बहुत पुरानी customer हैं',photo:'',bill:'',
+     girvi:[{id:101,item:'Gold Chain 18g',amount:54000,interest:1.5,status:'Active',date:'1/5/2026'},{id:102,item:'Gold Ring 5g',amount:15000,interest:2,status:'Returned',date:'15/4/2026'}],date:'1/1/2025'},
+    {id:2,name:'Suresh Agarwal',phone:'9012345678',city:'Agra',udhar:0,type:'Regular',idNo:'',note:'',photo:'',bill:'',girvi:[],date:'15/3/2025'},
+    {id:3,name:'Meena Verma',phone:'8765432109',city:'Jaipur',udhar:12000,type:'New',idNo:'PQRVS9876Y',note:'सोने की चेन गिरवी है',photo:'',bill:'',
+     girvi:[{id:103,item:'Silver Necklace 50g',amount:25000,interest:1,status:'Active',date:'28/4/2026'}],date:'28/4/2026'},
+  ];
+  save();
+}
+
+//  DATA 
+let customers = [];
+let activeTab = 'customers';
+let expandedId = null;
+let deleteTarget = null;
+let girviTarget = null;
+let searchQuery = '';
+let cityFilter = '';
+let currentPhoto = '';
+let currentBill = '';
+let formOpen = false;
+
+function save(){
+  if(!currentUser) return;
+  const dataObj = {};
+  customers.forEach(c => { dataObj[String(c.id)] = c; });
+  db.ref('data/' + currentUser.username).set(dataObj)
+    .catch(err => showToast(' Save error: ' + err.message));
+}
+
+//  BACKUP & RESTORE 
+function openBackupModal(){
+  document.getElementById('backupSuccess').style.display = 'none';
+  document.getElementById('importFileInput').value = '';
+  document.getElementById('backupModal').classList.add('open');
+}
+function closeBackupModal(){
+  document.getElementById('backupModal').classList.remove('open');
+}
+
+function exportBackup(){
+  if(!currentUser){ showToast(' Pehle login karein'); return; }
+  const backupData = {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    username: currentUser.username,
+    name: currentUser.name,
+    customers: customers
+  };
+  const json = JSON.stringify(backupData, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toLocaleDateString('en-IN').replace(/\//g,'-');
+  a.href = url;
+  a.download = 'KanchanJwellers_Backup_' + date + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const s = document.getElementById('backupSuccess');
+  s.textContent = ' Backup file download हो गई! इसे safe रखें।';
+  s.style.display = 'block';
+  showToast(' Backup download हो गई!');
+}
+
+function importBackup(input){
+  if(!input.files[0]) return;
+  const file = input.files[0];
+  const r = new FileReader();
+  r.onload = function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      if(!data.customers || !Array.isArray(data.customers)){
+        showToast(' यह valid backup file नहीं है'); return;
+      }
+      // Confirm before overwrite
+      const count = data.customers.length;
+      const confirm = window.confirm(
+        ' Backup Import करें?\n\n' +
+        'इस file में ' + count + ' customers हैं।\n' +
+        'Backup date: ' + (data.exportDate ? new Date(data.exportDate).toLocaleDateString('hi-IN') : 'Unknown') + '\n\n' +
+        ' मौजूदा data इसमें merge होगा (duplicate नहीं बनेंगे)।\n\nImport करें?'
+      );
+      if(!confirm) return;
+      
+      // Merge: add customers that don't already exist (by id)
+      const existingIds = new Set(customers.map(c => c.id));
+      let addedCount = 0;
+      data.customers.forEach(c => {
+        if(!existingIds.has(c.id)){
+          customers.unshift(c);
+          addedCount++;
+        }
+      });
+      save();
+      render();
+      const s = document.getElementById('backupSuccess');
+      s.textContent = ' ' + addedCount + ' customers import हो गए!';
+      s.style.display = 'block';
+      showToast(' ' + addedCount + ' customers restore हो गए!');
+    } catch(err) {
+      showToast(' File read नहीं हो पाई');
+    }
+  };
+  r.readAsText(file);
+  input.value = '';
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+//  SPLASH 
+function closeSplash(){
+  const sp = document.getElementById('splash');
+  sp.classList.add('gone');
+  setTimeout(() => sp.remove(), 700);
+}
+// Auto-close splash after 6s only if no session
+setTimeout(() => { if(!currentUser){ const sp = document.getElementById('splash'); if(sp) { sp.classList.add('gone'); setTimeout(()=>sp.remove(),700); } } }, 6000);
+
+//  IMAGE VIEWER 
+function openImgViewer(src){ document.getElementById('viewerImg').src = src; document.getElementById('imgViewer').classList.add('open'); }
+function closeImgViewer(){ document.getElementById('imgViewer').classList.remove('open'); }
+
+//  PDF VIEWER 
+let pdfDoc = null, pdfCurrentPage = 1, pdfTotalPages = 1;
+let _currentPdfBase64 = null, _currentPdfTitle = '';
+
+// Set PDF.js worker (inline workerSrc for APK compatibility)
+if(typeof pdfjsLib !== 'undefined'){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+function openBillViewer(billData){
+  if(!billData) return;
+  // Image bill
+  if(!billData.startsWith('data:application/pdf') && !billData.startsWith('PDF:')){
+    openImgViewer(billData);
+    return;
+  }
+  // Old format (filename only) — can't display without actual data
+  if(billData.startsWith('PDF:')){
+    showToast(' यह पुराना PDF है, दोबारा upload करें');
+    return;
+  }
+  // New base64 PDF — open in built-in viewer
+  openPdfViewer(billData, 'Bill / Document');
+}
+
+function openPdfViewer(base64Data, title){
+  _currentPdfBase64 = base64Data;
+  _currentPdfTitle = title || 'PDF';
+  document.getElementById('pdfViewer').classList.add('open');
+  document.getElementById('pdfTitle').textContent = title || 'PDF';
+  document.getElementById('pdfCanvas').style.display = 'none';
+  document.getElementById('pdfLoading').style.display = 'flex';
+  pdfDoc = null; pdfCurrentPage = 1;
+
+  // Convert base64 data URI to Uint8Array
+  const base64 = base64Data.split(',')[1];
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+
+  pdfjsLib.getDocument({data: bytes}).promise.then(function(pdf){
+    pdfDoc = pdf;
+    pdfTotalPages = pdf.numPages;
+    pdfCurrentPage = 1;
+    renderPdfPage(pdfCurrentPage);
+  }).catch(function(err){
+    document.getElementById('pdfLoading').innerHTML = '<span style="color:#FF8A80;"> PDF load नहीं हुआ</span>';
+  });
+}
+
+function renderPdfPage(pageNum){
+  document.getElementById('pdfLoading').style.display = 'flex';
+  document.getElementById('pdfCanvas').style.display = 'none';
+  document.getElementById('pdfPageInfo').textContent = pageNum + ' / ' + pdfTotalPages;
+  document.getElementById('pdfPrev').disabled = pageNum <= 1;
+  document.getElementById('pdfNext').disabled = pageNum >= pdfTotalPages;
+
+  pdfDoc.getPage(pageNum).then(function(page){
+    const wrap = document.getElementById('pdfCanvasWrap');
+    const viewport = page.getViewport({scale: Math.min(2, (wrap.clientWidth - 24) / page.getViewport({scale:1}).width)});
+    const canvas = document.getElementById('pdfCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+    page.render({canvasContext: ctx, viewport: viewport}).promise.then(function(){
+      document.getElementById('pdfLoading').style.display = 'none';
+      canvas.style.display = 'block';
+      wrap.scrollTop = 0;
+    });
+  });
+}
+
+function pdfChangePage(delta){
+  const newPage = pdfCurrentPage + delta;
+  if(newPage < 1 || newPage > pdfTotalPages) return;
+  pdfCurrentPage = newPage;
+  renderPdfPage(pdfCurrentPage);
+}
+
+function closePdfViewer(){
+  document.getElementById('pdfViewer').classList.remove('open');
+  pdfDoc = null;
+  _currentPdfBase64 = null;
+  _currentPdfTitle = '';
+}
+
+//  PHOTO 
+function handlePhoto(input){
+  if(!input.files[0]) return;
+  const r = new FileReader();
+  r.onload = e => {
+    currentPhoto = e.target.result;
+    document.getElementById('photoImg').src = currentPhoto;
+    document.getElementById('photoImg').style.display = 'block';
+    document.getElementById('photoPlaceholder').style.display = 'none';
+    document.getElementById('rmPhotoBtn').style.display = 'inline-block';
+  };
+  r.readAsDataURL(input.files[0]);
+}
+function removePhoto(){
+  currentPhoto = '';
+  document.getElementById('photoImg').style.display = 'none';
+  document.getElementById('photoImg').src = '';
+  document.getElementById('photoPlaceholder').style.display = 'block';
+  document.getElementById('rmPhotoBtn').style.display = 'none';
+  document.getElementById('photoInput').value = '';
+}
+function setPhoto(data){
+  if(data){ currentPhoto=data; document.getElementById('photoImg').src=data; document.getElementById('photoImg').style.display='block'; document.getElementById('photoPlaceholder').style.display='none'; document.getElementById('rmPhotoBtn').style.display='inline-block'; }
+  else removePhoto();
+}
+
+//  BILL 
+function handleBill(input){
+  if(!input.files[0]) return;
+  const file = input.files[0];
+  const r = new FileReader();
+  r.onload = e => {
+    currentBill = e.target.result; // always store as base64 (image or PDF)
+    if(file.type === 'application/pdf'){
+      document.getElementById('billLabel').textContent = ' ' + file.name;
+      document.getElementById('billPreview').style.display = 'none';
+    } else {
+      document.getElementById('billLabel').textContent = ' Bill upload हो गई';
+      const prev = document.getElementById('billPreview');
+      prev.src = currentBill; prev.style.display = 'block';
+    }
+    document.getElementById('rmBillBtn').style.display = 'inline-block';
+  };
+  r.readAsDataURL(file);
+}
+function removeBill(e){
+  e.stopPropagation();
+  currentBill = '';
+  document.getElementById('billLabel').textContent = 'Bill या Document Upload करें';
+  document.getElementById('billPreview').style.display = 'none';
+  document.getElementById('billPreview').src = '';
+  document.getElementById('rmBillBtn').style.display = 'none';
+  document.getElementById('billInput').value = '';
+}
+function setBill(data){
+  if(!data){ removeBill({stopPropagation:()=>{}}); return; }
+  currentBill = data;
+  if(data.startsWith('data:application/pdf') || data.startsWith('PDF:')){
+    // PDF (new base64 format or old filename-only format)
+    const name = data.startsWith('PDF:') ? data.slice(4) : 'PDF Document';
+    document.getElementById('billLabel').textContent = ' ' + name;
+    document.getElementById('billPreview').style.display = 'none';
+  } else {
+    document.getElementById('billLabel').textContent = ' Bill upload हो गई';
+    document.getElementById('billPreview').src = data;
+    document.getElementById('billPreview').style.display = 'block';
+  }
+  document.getElementById('rmBillBtn').style.display = 'inline-block';
+}
+
+//  GIRVI ROWS 
+function addGirviRow(item=null){
+  const container = document.getElementById('girviRows');
+  const row = document.createElement('div');
+  row.className = 'g-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Item (e.g. Gold Chain 10g)" value="${item ? item.item : ''}">
+    <input type="number" placeholder="₹ रकम" value="${item ? item.amount : ''}">
+    <input type="number" placeholder="%" value="${item ? (item.interest||'') : ''}" class="intr-inp" min="0" max="100">
+    <select>
+      <option value="Active" ${!item||item.status==='Active'?'selected':''}> Active</option>
+      <option value="Returned" ${item&&item.status==='Returned'?'selected':''}> Returned</option>
+    </select>
+    <button class="btn-rm" onclick="this.parentElement.remove()"></button>
+  `;
+  container.appendChild(row);
+}
+function getGirviRows(){
+  const rows = document.querySelectorAll('#girviRows .g-row');
+  const items = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll('input');
+    const sel = row.querySelector('select');
+    if(inputs[0].value.trim()){
+      items.push({
+        id: Date.now() + Math.random(),
+        item: inputs[0].value.trim(),
+        amount: parseFloat(inputs[1].value) || 0,
+        interest: parseFloat(inputs[2].value) || 0,
+        status: sel.value,
+        date: new Date().toLocaleDateString('hi-IN')
+      });
+    }
+  });
+  return items;
+}
+
+//  FORM 
+function toggleForm(){
+  if(formOpen && !document.getElementById('editId').value){ hideForm(); return; }
+  formOpen = true;
+  document.getElementById('formCard').classList.add('visible');
+  const addBtn = document.getElementById('bnav-add');
+  if(addBtn) addBtn.classList.add('form-open');
+  document.getElementById('formTitle').textContent = ' नया Customer जोड़ें';
+  document.getElementById('editId').value = '';
+  clearFields();
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(() => document.getElementById('fName').focus(), 300);
+}
+function hideForm(){
+  formOpen = false;
+  document.getElementById('formCard').classList.remove('visible');
+  const addBtn = document.getElementById('bnav-add');
+  if(addBtn) addBtn.classList.remove('form-open');
+  clearFields();
+}
+function clearFields(){
+  ['fName','fPhone','fCity','fUdhar','fId','fNote'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fType').value = 'Regular';
+  document.getElementById('editId').value = '';
+  document.getElementById('girviRows').innerHTML = '';
+  removePhoto();
+  removeBill({stopPropagation:()=>{}});
+}
+function saveCustomer(){
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim();
+  if(!name){ showToast(' नाम लिखना ज़रूरी है!'); return; }
+  if(!phone){ showToast(' फ़ोन नंबर लिखना ज़रूरी है!'); return; }
+  const editId = document.getElementById('editId').value;
+  const data = {
+    name, phone,
+    city: document.getElementById('fCity').value.trim(),
+    udhar: parseFloat(document.getElementById('fUdhar').value) || 0,
+    type: document.getElementById('fType').value,
+    idNo: document.getElementById('fId').value.trim(),
+    note: document.getElementById('fNote').value.trim(),
+    photo: currentPhoto,
+    bill: currentBill,
+    girvi: getGirviRows(),
+    date: new Date().toLocaleDateString('hi-IN'),
+  };
+  if(editId){
+    const idx = customers.findIndex(c => c.id == editId);
+    if(idx > -1) customers[idx] = {...customers[idx], ...data};
+    showToast(' Customer update हो गया!');
+  } else {
+    data.id = Date.now();
+    customers.unshift(data);
+    showToast(' नया Customer जुड़ गया!');
+  }
+  save(); hideForm(); render();
+}
+function editCustomer(id, e){
+  e.stopPropagation();
+  const c = customers.find(x => x.id == id);
+  if(!c) return;
+  formOpen = true;
+  document.getElementById('formCard').classList.add('visible');
+  const addBtn = document.getElementById('bnav-add');
+  if(addBtn) addBtn.classList.add('form-open');
+  document.getElementById('formTitle').textContent = ' Customer Edit करें';
+  document.getElementById('editId').value = c.id;
+  document.getElementById('fName').value = c.name;
+  document.getElementById('fPhone').value = c.phone;
+  document.getElementById('fCity').value = c.city || '';
+  document.getElementById('fUdhar').value = c.udhar || '';
+  document.getElementById('fType').value = c.type || 'Regular';
+  document.getElementById('fId').value = c.idNo || '';
+  document.getElementById('fNote').value = c.note || '';
+  document.getElementById('girviRows').innerHTML = '';
+  (c.girvi || []).forEach(g => addGirviRow(g));
+  setPhoto(c.photo || '');
+  setBill(c.bill || '');
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+//  DELETE 
+function deleteCustomer(id,e){ e.stopPropagation(); deleteTarget=id; document.getElementById('deleteModal').classList.add('open'); }
+function confirmDelete(){ customers=customers.filter(c=>c.id!=deleteTarget); save(); closeDeleteModal(); showToast(' Customer हटा दिया।'); render(); }
+function closeDeleteModal(){ document.getElementById('deleteModal').classList.remove('open'); deleteTarget=null; }
+
+//  GIRVI STATUS 
+function openGirviStatus(id, e){
+  e.stopPropagation();
+  girviTarget = id;
+  const c = customers.find(x => x.id == id);
+  if(!c || !c.girvi || !c.girvi.length){ showToast('कोई girvi item नहीं है।'); return; }
+  refreshGirviModal(id);
+  document.getElementById('girviModal').classList.add('open');
+}
+function refreshGirviModal(cid){
+  const c = customers.find(x => x.id == cid);
+  document.getElementById('girviStatusList').innerHTML = c.girvi.map((g,i) => {
+    const cls = g.status==='Returned' ? 'chip-r' : 'chip-a';
+    return `<div class="g-chip ${cls} g-chip-click" onclick="toggleGirviStatus(${cid},${i})">
+      ${g.status==='Returned'?'':''} ${g.item} ₹${g.amount}${g.interest?` @${g.interest}%`:''}
+    </div>`;
+  }).join('');
+}
+function toggleGirviStatus(cid, idx){
+  const c = customers.find(x => x.id == cid);
+  if(!c) return;
+  c.girvi[idx].status = c.girvi[idx].status === 'Active' ? 'Returned' : 'Active';
+  save(); refreshGirviModal(cid); render(); showToast(' Status update!');
+}
+function closeGirviModal(){ document.getElementById('girviModal').classList.remove('open'); girviTarget=null; }
+
+//  PDF 
+async function buildPDF(id){
+  const c = customers.find(x => x.id == id);
+  if(!c) return null;
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210, M=18;
+  let y=0;
+
+  doc.setFillColor(10,8,0); doc.rect(0,0,210,50,'F');
+  doc.setFillColor(212,160,23); doc.rect(0,48,210,2,'F');
+  doc.setFillColor(212,160,23); doc.circle(M+13,15,10,'F');
+  doc.setTextColor(10,8,0); doc.setFontSize(12); doc.setFont('helvetica','bold');
+  doc.text('KJ', M+9.5, 18.5);
+  doc.setTextColor(240,192,64); doc.setFontSize(20); doc.setFont('helvetica','bold');
+  doc.text('Kanchan Jwellers', M+28, 16);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(180,140,40);
+  doc.text('Gold  |  Silver  |  Jewellery', M+28, 23);
+  doc.setFontSize(7); doc.setTextColor(100,80,30);
+  doc.text('Customer Profile  —  Printed: '+new Date().toLocaleDateString('en-IN'), M+28, 30);
+  y = 58;
+
+  if(c.photo){
+    try{ doc.addImage(c.photo,'JPEG',W-M-28,y-4,28,28,'','FAST'); doc.setDrawColor(212,160,23); doc.setLineWidth(0.8); doc.rect(W-M-28,y-4,28,28,undefined); } catch(err){}
+  }
+
+  doc.setTextColor(10,8,0); doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text(c.name, M, y+6);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(120,90,20);
+  doc.text('Type: '+c.type+'   |   Joined: '+c.date, M, y+13);
+  y += 26;
+
+  doc.setDrawColor(212,160,23); doc.setLineWidth(0.4); doc.line(M,y,W-M,y); y += 8;
+
+  const fields=[
+    ['Phone',c.phone||'-'],['City / Address',c.city||'-'],
+    ['Udhar Balance',c.udhar>0?'Rs. '+c.udhar.toLocaleString('en-IN'):'Nil (Clear)'],
+    ['ID Number',c.idNo||'-'],['Note',c.note||'-']
+  ];
+  doc.setFontSize(9);
+  fields.forEach(([l,v])=>{
+    doc.setFont('helvetica','bold'); doc.setTextColor(139,105,20); doc.text(l+' :',M,y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(20,16,0);
+    const lines=doc.splitTextToSize(String(v),W-M-55);
+    doc.text(lines,M+48,y); y+=7*Math.max(1,lines.length);
+  });
+  y += 4;
+
+  if(c.girvi && c.girvi.length){
+    doc.setDrawColor(212,160,23); doc.line(M,y,W-M,y); y+=8;
+    doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(183,28,28);
+    doc.text('Girvi (Pledge) Records', M, y); y+=8;
+    const cols = [72, 26, 20, 24, 22];
+    doc.setFillColor(139,105,20); doc.rect(M,y-5,W-2*M,8,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+    let gx=M;
+    ['Item','Amount','Interest','Status','Date'].forEach((h,i)=>{ doc.text(h,gx+2,y); gx+=cols[i]; });
+    y+=6;
+    let activeTotal=0, interestTotal=0;
+    c.girvi.forEach((g,idx)=>{
+      if(idx%2===0){doc.setFillColor(253,246,220);doc.rect(M,y-4,W-2*M,8,'F');}
+      doc.setFont('helvetica','normal'); doc.setFontSize(8);
+      let gx2=M;
+      const il=doc.splitTextToSize(g.item,68);
+      doc.setTextColor(30,20,0); doc.text(il,gx2+2,y); gx2+=cols[0];
+      doc.text('Rs.'+g.amount,gx2+2,y); gx2+=cols[1];
+      doc.text(g.interest?g.interest+'%':'-',gx2+2,y); gx2+=cols[2];
+      doc.setTextColor(g.status==='Active'?183:27,g.status==='Active'?28:94,g.status==='Active'?28:32);
+      doc.text(g.status,gx2+2,y); gx2+=cols[3];
+      doc.setTextColor(100,80,20); doc.text(g.date||'-',gx2+2,y);
+      if(g.status==='Active'){ activeTotal+=g.amount; interestTotal+=g.interest?g.amount*(g.interest/100):0; }
+      y+=8*Math.max(1,il.length);
+    });
+    if(activeTotal>0){
+      y+=3;
+      doc.setFont('helvetica','bold'); doc.setTextColor(183,28,28); doc.setFontSize(9.5);
+      doc.text('Active Girvi Total: Rs. '+activeTotal.toLocaleString('en-IN'), M, y); y+=7;
+      if(interestTotal>0){ doc.setTextColor(139,105,20); doc.text('Est. Interest (monthly): Rs. '+Math.round(interestTotal).toLocaleString('en-IN'), M, y); y+=7; }
+    }
+  }
+
+  if(c.bill && !c.bill.startsWith('PDF:')){
+    try{ doc.addImage(c.bill,'JPEG',M,y+4,50,35,'','FAST'); doc.setFontSize(7); doc.setTextColor(100,80,30); doc.text('Bill / Receipt', M, y+2); y+=44; }catch(err){}
+  } else if(c.bill && (c.bill.startsWith('PDF:') || c.bill.startsWith('data:application/pdf'))){
+    y+=6; doc.setFontSize(8); doc.setTextColor(21,101,192);
+    const bname = c.bill.startsWith('PDF:') ? c.bill.slice(4) : 'PDF Document';
+    doc.text('Bill File: '+bname+' (PDF - attached separately)', M, y); y+=8;
+  }
+
+  doc.setFillColor(10,8,0); doc.rect(0,282,210,15,'F');
+  doc.setTextColor(139,105,20); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+  doc.text('Kanchan Jwellers  |  Ph: 6375148590  |  arjavjain303@gmail.com  |  Mon–Sat 10AM–8PM',W/2,290,{align:'center'});
+
+  return { doc, fileName: 'KanchanJwellers_'+c.name.replace(/\s+/g,'_')+'.pdf', customerName: c.name };
+}
+
+async function generatePDF(id, e){
+  e.stopPropagation();
+  showToast(' PDF बन रही है...');
+  const result = await buildPDF(id);
+  if(!result) return;
+  const { doc, fileName, customerName } = result;
+
+  // Android WebView
+  if(window.Android && typeof window.Android.savePdf === 'function'){
+    window.Android.savePdf(doc.output('datauristring'), fileName);
+    showToast(' PDF save हो गई!');
+    return;
+  }
+
+  // Show PDF action modal
+  const pdfBase64 = doc.output('datauristring');
+  openPdfActionModal(doc, fileName, customerName, pdfBase64);
+}
+
+async function sharePDF(id, e){
+  e.stopPropagation();
+  showToast(' PDF बन रही है...');
+  const result = await buildPDF(id);
+  if(!result) return;
+  const { doc, fileName, customerName } = result;
+
+  try {
+    const blob = doc.output('blob');
+    const file = new File([blob], fileName, {type:'application/pdf'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Kanchan Jwellers — '+customerName});
+      showToast(' Share हो गई!');
+      return;
+    }
+  } catch(err){ if(err.name === 'AbortError') return; }
+
+  // Fallback — WhatsApp share via link (open PDF viewer first)
+  const pdfBase64 = doc.output('datauristring');
+  openPdfViewer(pdfBase64, 'PDF — ' + customerName);
+  showToast(' PDF खुली — Share करें');
+}
+
+function openPdfActionModal(doc, fileName, customerName, pdfBase64){
+  document.getElementById('pdfActionTitle').textContent = customerName;
+  document.getElementById('pdfActionModal').classList.add('open');
+  // Store for buttons
+  window._pdfActionData = { doc, fileName, customerName, pdfBase64 };
+}
+function closePdfActionModal(){
+  document.getElementById('pdfActionModal').classList.remove('open');
+  window._pdfActionData = null;
+}
+function pdfActionDownload(){
+  const d = window._pdfActionData; if(!d) return;
+  d.doc.save(d.fileName);
+  showToast(' PDF download हो गई!');
+  closePdfActionModal();
+}
+function pdfActionShare(){
+  const d = window._pdfActionData; if(!d) return;
+  const blob = d.doc.output('blob');
+  const file = new File([blob], d.fileName, {type:'application/pdf'});
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file], title:'Kanchan Jwellers — '+d.customerName});
+    closePdfActionModal();
+    return;
+  }
+  // Fallback — open in viewer
+  closePdfActionModal();
+  openPdfViewer(d.pdfBase64, 'PDF — ' + d.customerName);
+  showToast(' PDF खुली — Share करें');
+}
+function pdfActionView(){
+  const d = window._pdfActionData; if(!d) return;
+  closePdfActionModal();
+  openPdfViewer(d.pdfBase64, 'PDF — ' + d.customerName);
+}
+
+// Share PDF directly from viewer toolbar
+async function sharePdfFromViewer(){
+  if(!_currentPdfBase64){ showToast(' कोई PDF नहीं है'); return; }
+  try {
+    const base64 = _currentPdfBase64.split(',')[1];
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+    const blob = new Blob([bytes], {type:'application/pdf'});
+    const safeName = (_currentPdfTitle||'Document').replace(/[^a-zA-Z0-9_\- ]/g,'') + '.pdf';
+    const file = new File([blob], safeName, {type:'application/pdf'});
+    // Android WebView bridge
+    if(window.Android && typeof window.Android.sharePdf === 'function'){
+      window.Android.sharePdf(_currentPdfBase64, safeName);
+      showToast(' Share हो गई!');
+      return;
+    }
+    // Web Share API
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'Kanchan Jwellers — '+_currentPdfTitle});
+      showToast(' Share हो गई!');
+      return;
+    }
+    // Fallback — open in new tab / download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = safeName; a.target = '_blank';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+    showToast(' PDF download हो गई!');
+  } catch(err){
+    if(err.name !== 'AbortError') showToast(' Share नहीं हो पाई');
+  }
+}
+
+// LOCAL BACKUP — Save to localStorage
+function saveToLocal(){
+  if(!currentUser){ showToast(' Pehle login karein'); return; }
+  try {
+    const backupData = {
+      version: '1.0',
+      savedDate: new Date().toISOString(),
+      username: currentUser.username,
+      name: currentUser.name,
+      customers: customers
+    };
+    const key = 'kj_local_backup_' + currentUser.username;
+    localStorage.setItem(key, JSON.stringify(backupData));
+    const info = document.getElementById('localBackupInfo');
+    info.textContent = ' Local backup save हो गई! (' + customers.length + ' customers) — ' + new Date().toLocaleString('hi-IN');
+    info.style.display = 'block';
+    info.style.background = '#E8F5E9'; info.style.color = '#1B5E20';
+    showToast(' Device पर save हो गया!');
+  } catch(err) {
+    showToast(' Local save नहीं हो पाया: ' + err.message);
+  }
+}
+
+// LOCAL BACKUP — Load from localStorage
+function loadFromLocal(){
+  if(!currentUser){ showToast(' Pehle login karein'); return; }
+  try {
+    const key = 'kj_local_backup_' + currentUser.username;
+    const raw = localStorage.getItem(key);
+    if(!raw){ showToast(' कोई local backup नहीं मिली'); return; }
+    const data = JSON.parse(raw);
+    if(!data.customers || !Array.isArray(data.customers)){
+      showToast(' Local backup corrupt है'); return;
+    }
+    const savedDate = data.savedDate ? new Date(data.savedDate).toLocaleString('hi-IN') : 'Unknown';
+    const ok = window.confirm(
+      ' Local Backup Restore करें?\n\n' +
+      'Save date: ' + savedDate + '\n' +
+      'Customers: ' + data.customers.length + '\n\n' +
+      'Existing data में merge होगा।\n\nRestore करें?'
+    );
+    if(!ok) return;
+    const existingIds = new Set(customers.map(c => c.id));
+    let added = 0;
+    data.customers.forEach(c => { if(!existingIds.has(c.id)){ customers.unshift(c); added++; } });
+    save(); render();
+    const info = document.getElementById('localBackupInfo');
+    info.textContent = ' ' + added + ' customers restore हो गए local backup से!';
+    info.style.display = 'block';
+    info.style.background = '#E3F2FD'; info.style.color = '#1565C0';
+    showToast(' ' + added + ' customers restore हो गए!');
+  } catch(err){
+    showToast(' Local backup read नहीं हो पाई');
+  }
+}
+
+//  SEARCH 
+function handleSearch(input){
+  searchQuery = input.value.trim().toLowerCase();
+  document.getElementById('clearBtn').style.display = searchQuery ? 'block' : 'none';
+  // If user types a city name, auto-select city filter
+  if(searchQuery.length >= 2){
+    const matched = [...new Set(customers.map(c=>(c.city||'').trim()).filter(Boolean))]
+      .find(city => city.toLowerCase() === searchQuery);
+    if(matched && cityFilter !== matched){
+      cityFilter = matched;
+      renderCityChips();
+    }
+  }
+  render();
+}
+function clearSearch(){
+  document.getElementById('searchInput').value = '';
+  searchQuery = '';
+  cityFilter = '';
+  document.getElementById('clearBtn').style.display = 'none';
+  renderCityChips();
+  render();
+}
+function renderCityChips(){
+  const cities = [...new Set(customers.map(c=>(c.city||'').trim()).filter(Boolean))].sort();
+  const wrap = document.getElementById('cityFilterWrap');
+  const chips = document.getElementById('cityChips');
+  if(!cities.length){ wrap.classList.remove('visible'); return; }
+  wrap.classList.add('visible');
+  // All chip + city chips
+  const allActive = !cityFilter ? 'active' : '';
+  chips.innerHTML = `<span class="city-chip ${allActive}" onclick="setCityFilter('')">
+    🗺️ सभी <span class="city-chip-count">${customers.length}</span>
+  </span>` + cities.map(city => {
+    const count = customers.filter(c=>(c.city||'').trim()===city).length;
+    const active = cityFilter === city ? 'active' : '';
+    return `<span class="city-chip ${active}" onclick="setCityFilter('${city.replace(/'/g,"\'")}')">
+      📍 ${city} <span class="city-chip-count">${count}</span>
+    </span>`;
+  }).join('');
+}
+function setCityFilter(city){
+  cityFilter = city;
+  renderCityChips();
+  render();
+}
+function hl(text, q){
+  if(!q || !text) return text || '';
+  return String(text).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+}
+
+//  TABS 
+function switchTab(tab, bnavId){
+  activeTab = tab;
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(bnavId);
+  if(btn) btn.classList.add('active');
+  expandedId = null;
+  document.getElementById('searchInput').style.display = tab === 'customers' ? 'block' : 'none';
+  document.getElementById('clearBtn').style.display = 'none';
+  if(tab !== 'customers'){ cityFilter=''; document.getElementById('cityFilterWrap').classList.remove('visible'); }
+  if(formOpen) hideForm();
+  render();
+}
+
+function toggleExpand(id){ expandedId = expandedId === id ? null : id; render(); }
+
+//  AVATAR 
+const AVC=[['#8B6914','#FFF8E1'],['#7B2020','#FFF0F0'],['#1B5E20','#E8F5E9'],['#1A237E','#EDE7F6'],['#4A148C','#F3E5F5']];
+function getAv(name,id){ const c=AVC[id%AVC.length]; const init=(name||'?').trim().split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase(); return {bg:c[0],light:c[1],init}; }
+function avatarHTML(c){
+  const av=getAv(c.name,c.id);
+  return c.photo
+    ? `<img src="${c.photo}" alt="${c.name}">`
+    : `<span style="background:${av.light};color:${av.bg};width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:'Cormorant Garamond',serif;">${av.init}</span>`;
+}
+
+//  INTEREST CALC 
+function calcInterest(g){
+  if(!g.interest || g.status !== 'Active') return 0;
+  return Math.round(g.amount * g.interest / 100);
+}
+
+//  RENDER 
+function render(){
+  const q = searchQuery;
+  let list = customers;
+  if(cityFilter) list = list.filter(c => (c.city||'').trim() === cityFilter);
+  if(q) list = list.filter(c =>
+    (c.name||'').toLowerCase().includes(q) ||
+    (c.phone||'').includes(q) ||
+    (c.city||'').toLowerCase().includes(q)
+  );
+  const totalUdhar = customers.reduce((s,c) => s+(c.udhar||0), 0);
+  const activeGirvi = customers.filter(c => (c.girvi||[]).some(g=>g.status==='Active')).length;
+  const newCount = customers.filter(c=>c.type==='New').length;
+  document.getElementById('sTotal').textContent = customers.length;
+  document.getElementById('sNew').textContent = newCount;
+  document.getElementById('sGirvi').textContent = activeGirvi;
+  document.getElementById('sUdhar').textContent = '₹'+totalUdhar.toLocaleString('hi-IN');
+  document.getElementById('hTotal').textContent = customers.length;
+  document.getElementById('hGirvi').textContent = activeGirvi;
+
+  if(activeTab==='customers') renderCityChips();
+  const area = document.getElementById('contentArea');
+  if(activeTab==='customers') renderCustomers(area,list,q);
+  else if(activeTab==='girvi') renderGirvi(area);
+  else if(activeTab==='udhar') renderUdhar(area);
+  else if(activeTab==='care') renderCare(area);
+}
+
+function renderCustomers(area, list, q){
+  const cityLabel = cityFilter ? ` 📍 ${cityFilter}` : '';
+  const title = (q || cityFilter)
+    ? `${cityLabel}${q ? ` "${searchQuery}"` : ''} — ${list.length} मिले`
+    : ` सभी Customers (${customers.length})`;
+  if(!list.length){
+    area.innerHTML = `<div class="sec-hdr">${title}</div><div class="empty-state"><div class="ei">${q?'':''}</div><p>${q?'कोई customer नहीं मिला।':'अभी कोई नहीं। + दबाएं!'}</p></div>`;
+    return;
+  }
+  area.innerHTML = `<div class="sec-hdr">${title}</div>` + list.map(c => {
+    const hasG = (c.girvi||[]).some(g=>g.status==='Active');
+    const isOpen = expandedId === c.id;
+    const girviTable = (c.girvi&&c.girvi.length) ? `
+      <div style="margin-bottom:11px;">
+        <div class="girvi-mini-hdr"> Girvi Items</div>
+        <table class="girvi-tbl"><thead><tr><th>Item</th><th>Amount</th><th>ब्याज</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>${c.girvi.map(g=>`<tr>
+          <td>${g.item}</td><td>₹${g.amount}</td>
+          <td>${g.interest ? `<span class="intr-tag">${g.interest}%</span>` : '-'}</td>
+          <td class="${g.status==='Active'?'st-active':'st-ret'}">${g.status==='Active'?' Active':' Returned'}</td>
+          <td>${g.date||'-'}</td></tr>`).join('')}</tbody></table>
+        ${(()=>{
+          const activeTotal = c.girvi.filter(g=>g.status==='Active').reduce((s,g)=>s+g.amount,0);
+          const intTotal = c.girvi.filter(g=>g.status==='Active'&&g.interest).reduce((s,g)=>s+Math.round(g.amount*g.interest/100),0);
+          if(!activeTotal) return '';
+          return `<div style="margin-top:7px;padding:8px 11px;background:#FFEBEE;border-radius:9px;font-size:0.78rem;display:flex;gap:12px;flex-wrap:wrap;">
+            <span style="color:var(--red2);font-weight:700;"> Active: ₹${activeTotal.toLocaleString('hi-IN')}</span>
+            ${intTotal?`<span style="color:#BF6000;font-weight:700;"> Monthly Interest: ₹${intTotal.toLocaleString('hi-IN')}</span>`:''}
+          </div>`;
+        })()}
+      </div>` : '';
+    const billBtn = c.bill ? `<button class="btn-act" style="background:#E8F5E9;color:#1B5E20;border:1.5px solid #A5D6A7;font-size:0.72rem;flex:1;min-width:58px;padding:9px 5px;border-radius:10px;font-weight:700;cursor:pointer;" onclick="event.stopPropagation();openBillViewer('${c.bill.replace(/'/g,"\\'")}')"> Bill</button>` : '';
+
+    return `<div class="cust-card${isOpen?' expanded':''}" onclick="toggleExpand(${c.id})">
+      <div class="card-top">
+        <div class="c-avatar">${avatarHTML(c)}</div>
+        <div class="c-info">
+          <div class="c-name">${hl(c.name,q)}</div>
+          <div class="c-phone"> ${hl(c.phone,q)}</div>
+          <div class="c-badges">
+            <span class="badge ${c.type==='New'?'b-new':'b-reg'}">${c.type}</span>
+            ${hasG?'<span class="badge b-girvi"> Girvi</span>':''}
+            ${c.udhar>0?`<span class="badge b-udhar"> ₹${c.udhar}</span>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="card-body${isOpen?' open':''}">
+        <div class="info-grid">
+          <div class="info-tile"><div class="info-tile-l"> शहर</div><div class="info-tile-v">${hl(c.city||'-',q)}</div></div>
+          <div class="info-tile"><div class="info-tile-l"> उधार</div><div class="info-tile-v ${c.udhar>0?'red':'green'}">₹${c.udhar||0}</div></div>
+          <div class="info-tile"><div class="info-tile-l"> ID No.</div><div class="info-tile-v">${c.idNo||'-'}</div></div>
+          <div class="info-tile"><div class="info-tile-l"> जोड़ा</div><div class="info-tile-v">${c.date||'-'}</div></div>
+          ${c.note?`<div class="info-tile" style="grid-column:1/-1"><div class="info-tile-l"> नोट</div><div class="info-tile-v">${c.note}</div></div>`:''}
+        </div>
+        ${girviTable}
+        ${c.bill && !c.bill.startsWith('PDF:') && !c.bill.startsWith('data:application/pdf') ? `<img src="${c.bill}" class="bill-thumb" onclick="event.stopPropagation();openBillViewer('${c.bill}')" alt="Bill">` : ''}
+        ${(c.bill && (c.bill.startsWith('data:application/pdf') || c.bill.startsWith('PDF:'))) ? `<div style="background:#E3F2FD;border-radius:9px;padding:8px 12px;font-size:0.78rem;color:#1565C0;font-weight:700;margin-bottom:8px;cursor:pointer;" onclick="event.stopPropagation();openBillViewer('${c.bill.replace(/'/g,"\\'")}')"> ${c.bill.startsWith('PDF:') ? c.bill.slice(4) : 'PDF Bill — tap करके देखें'}</div>` : ''}
+        <div class="card-actions">
+          <button class="btn-act ba-edit" onclick="editCustomer(${c.id},event)"> Edit</button>
+          <button class="btn-act ba-pdf" onclick="generatePDF(${c.id},event)"> PDF</button>
+          <button class="btn-act" style="background:#E8F5E9;color:#1B5E20;border:1.5px solid #A5D6A7;" onclick="sharePDF(${c.id},event)"> Share</button>
+          ${(c.girvi&&c.girvi.length)?`<button class="btn-act ba-gv" onclick="openGirviStatus(${c.id},event)"> Girvi</button>`:''}
+          ${billBtn}
+          <button class="btn-act ba-del" onclick="deleteCustomer(${c.id},event)"></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGirvi(area){
+  const list = customers.filter(c => c.girvi && c.girvi.length);
+  const activeCount = customers.filter(c=>(c.girvi||[]).some(g=>g.status==='Active')).length;
+  if(!list.length){
+    area.innerHTML = `<div class="sec-hdr"> Girvi Records</div><div class="empty-state"><div class="ei"></div><p>कोई girvi record नहीं है।</p></div>`;
+    return;
+  }
+  area.innerHTML = `<div class="sec-hdr"> Girvi Records — ${activeCount} Active</div>` +
+    list.map(c => {
+      const activeTotal = (c.girvi||[]).filter(g=>g.status==='Active').reduce((s,g)=>s+g.amount,0);
+      const intTotal = (c.girvi||[]).filter(g=>g.status==='Active'&&g.interest).reduce((s,g)=>s+Math.round(g.amount*g.interest/100),0);
+      return `<div class="girvi-card">
+        <div class="gc-head">
+          <div class="gc-av">${avatarHTML(c)}</div>
+          <div style="flex:1;">
+            <div class="gc-name">${c.name}</div>
+            <div class="gc-sub"> ${c.phone} &nbsp;|&nbsp;  ${c.city||'-'}</div>
+          </div>
+          ${activeTotal?`<div style="text-align:right"><div style="font-size:0.95rem;font-weight:700;color:var(--red2);">₹${activeTotal.toLocaleString('hi-IN')}</div><div style="font-size:0.62rem;color:#B09040;">Active</div></div>`:''}
+        </div>
+        <div class="g-chips">${c.girvi.map(g=>`
+          <span class="g-chip ${g.status==='Active'?'chip-a':'chip-r'}">${g.status==='Active'?'':''} ${g.item} — ₹${g.amount}${g.interest?` @${g.interest}%`:''}</span>`).join('')}</div>
+        ${intTotal?`<div style="margin-top:8px;padding:7px 10px;background:#FFF8E1;border-radius:8px;font-size:0.76rem;color:var(--gold);font-weight:700;"> Monthly Interest: ₹${intTotal.toLocaleString('hi-IN')}</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button class="btn-act ba-gv" style="font-size:0.72rem;flex:1;padding:8px;border-radius:9px;border:1.5px solid #FFCC80;" onclick="openGirviStatus(${c.id},event)"> Status Change</button>
+          <button class="btn-act ba-pdf" style="font-size:0.72rem;flex:1;padding:8px;border-radius:9px;border:1.5px solid #90CAF9;" onclick="generatePDF(${c.id},event)"> PDF</button>
+          <button class="btn-act" style="font-size:0.72rem;flex:1;padding:8px;border-radius:9px;background:#E8F5E9;color:#1B5E20;border:1.5px solid #A5D6A7;" onclick="sharePDF(${c.id},event)"> Share</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function renderUdhar(area){
+  const list = customers.filter(c => c.udhar>0).sort((a,b) => b.udhar-a.udhar);
+  const total = list.reduce((s,c) => s+c.udhar, 0);
+  if(!list.length){
+    area.innerHTML = `<div class="sec-hdr"> उधार List</div><div class="empty-state"><div class="ei"></div><p>कोई उधार नहीं! सब clear है।</p></div>`;
+    return;
+  }
+  area.innerHTML = `<div class="sec-hdr"> उधार List — Total ₹${total.toLocaleString('hi-IN')}</div>` +
+    list.map(c => `<div class="udhar-card">
+      <div class="c-avatar" style="width:46px;height:46px;">${avatarHTML(c)}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:var(--f-display);font-size:1.02rem;font-weight:600;">${c.name}</div>
+        <div style="font-size:0.77rem;color:#B09040;margin-top:1px;"> ${c.phone} &nbsp;|&nbsp;  ${c.city||'-'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div style="font-size:1.1rem;font-weight:700;color:var(--red2);">₹${c.udhar.toLocaleString('hi-IN')}</div>
+        <div style="font-size:0.62rem;color:#B09040;">उधार बाकी</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderCare(area){
+  area.innerHTML = `
+    <div class="care-hero">
+      <div class="care-badge"> Customer Support</div>
+      <h2>हम आपकी मदद के लिए हैं</h2>
+      <p>किसी भी सवाल, शिकायत या जानकारी के लिए नीचे दिए गए नंबर पर call करें या email करें।</p>
+    </div>
+    <div class="care-grid">
+      <a href="tel:6375148590" class="care-cta cta-call">
+        <div class="care-cta-icon"></div>
+        <div class="care-cta-title">Call करें</div>
+        <div class="care-cta-val">6375148590</div>
+      </a>
+      <a href="mailto:arjavjain303@gmail.com" class="care-cta cta-mail">
+        <div class="care-cta-icon"></div>
+        <div class="care-cta-title">Email करें</div>
+        <div class="care-cta-val">arjavjain303@gmail.com</div>
+      </a>
+    </div>
+    <div class="care-info">
+      <div class="cib-title"> Contact Details</div>
+      <div class="cib-row">
+        <div class="cib-icon" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);"></div>
+        <div><div class="cib-l">Phone Number</div><div class="cib-v">6375148590</div></div>
+        <div style="margin-left:auto;"><a href="tel:6375148590" class="cib-btn call">Call</a></div>
+      </div>
+      <div class="cib-row">
+        <div class="cib-icon" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);"></div>
+        <div style="min-width:0;flex:1;"><div class="cib-l">Gmail</div><div class="cib-v" style="font-size:0.82rem;word-break:break-all;">arjavjain303@gmail.com</div></div>
+        <div style="margin-left:8px;"><a href="mailto:arjavjain303@gmail.com" class="cib-btn mail">Email</a></div>
+      </div>
+      <div class="cib-row">
+        <div class="cib-icon" style="background:linear-gradient(135deg,#FFF8E1,#FFECB3);"></div>
+        <div><div class="cib-l">Shop Timing</div><div class="cib-v">सोमवार – शनिवार</div><div style="font-size:0.76rem;color:#B09040;">10:00 AM – 8:00 PM</div></div>
+      </div>
+      <div class="care-note">
+        <p> <strong>Kanchan Jwellers</strong> में आपका स्वागत है।<br>
+        हम आपको सबसे अच्छी ज्वेलरी और सेवा देने का वादा करते हैं।<br>
+        <strong>आपकी मुस्कान हमारी पहचान है।</strong> </p>
+      </div>
+    </div>`;
+}
+
+// =========================================================
+//  DESKTOP PAGE
+// =========================================================
+function openDesktopPage(){
+  // Try to open desktop.html directly
+  const base = window.location.href.replace(/[^/]*(\?.*)?$/, '');
+  const desktopUrl = base + 'desktop.html';
+  // Show the info page with desktop URL
+  const page = document.getElementById('desktopPage');
+  document.getElementById('dpageUrl').textContent = desktopUrl;
+  page.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDesktopPage(){
+  document.getElementById('desktopPage').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function copyDesktopUrl(){
+  const base = window.location.href.replace(/[^/]*(\?.*)?$/, '');
+  const url = base + 'desktop.html';
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>{
+      showToast('✅ URL Copy हो गई!');
+      const btn = document.querySelector('.dpage-copy-btn');
+      btn.textContent = '✅ Copied!';
+      setTimeout(()=>{ btn.textContent = '📋 Copy'; }, 2000);
+    }).catch(()=> fallbackCopy(url));
+  } else { fallbackCopy(url); }
+}
+function fallbackCopy(url){
+  const ta = document.createElement('textarea');
+  ta.value = url; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('✅ URL Copy हो गई!');
+}
+function openDesktopDirect(){
+  const base = window.location.href.replace(/[^/]*(\?.*)?$/, '');
+  window.open(base + 'desktop.html', '_blank');
+}
+function shareDesktopUrl(){
+  const base = window.location.href.replace(/[^/]*(\?.*)?$/, '');
+  const url = base + 'desktop.html';
+  if(navigator.share){
+    navigator.share({ title:'Kanchan Jwellers App', text:'इस link से app खोलें:', url }).catch(()=>{});
+  } else {
+    copyDesktopUrl();
+    showToast('URL copy हो गई — WhatsApp में paste करें');
+  }
+}
+
+//  INIT 
+(function init(){
+  const sess = getSession();
+  if(sess){
+    currentUser = sess;
+    enterApp();
+    setTimeout(()=>{ const sp=document.getElementById('splash'); if(sp){sp.classList.add('gone');setTimeout(()=>sp.remove(),700);} }, 200);
+  }
+})();
+
+// =========================================================
+//  PWA — Dynamic Manifest (no extra file needed)
+// =========================================================
+(function setupPWA(){
+  const manifest = {
+    name: "Kanchan Jwellers",
+    short_name: "KJ",
+    description: "Kanchan Jwellers Customer Management App",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0A0800",
+    theme_color: "#0A0800",
+    orientation: "any",
+    icons: [
+      { src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23B8860B'/><text x='96' y='140' font-size='110' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%231A1200'>K</text></svg>`), sizes: "192x192", type: "image/svg+xml" },
+      { src: "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23B8860B'/><text x='256' y='370' font-size='300' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%231A1200'>K</text></svg>`), sizes: "512x512", type: "image/svg+xml" }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  document.getElementById('pwaManifest').href = url;
+})();
+
+// =========================================================
+//  PWA INSTALL PROMPT
+// =========================================================
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  showInstallButtons();
+});
+
+window.addEventListener('appinstalled', () => {
+  _deferredInstallPrompt = null;
+  hideInstallButtons();
+  showToast('✅ App install हो गई! Desktop पर check करें');
+});
+
+function showInstallButtons(){
+  // User menu item
+  const mb = document.getElementById('menuInstallBtn');
+  if(mb) mb.style.display = 'flex';
+  // Mobile: install banner (only on small screens)
+  if(window.innerWidth < 900){
+    const banner = document.getElementById('installBanner');
+    if(banner && !localStorage.getItem('kj_install_dismissed')) banner.classList.add('show');
+  }
+}
+
+function hideInstallButtons(){
+  ['menuInstallBtn'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.classList.remove('visible'); el.style.display='none'; }
+  });
+  const banner = document.getElementById('installBanner');
+  if(banner) banner.classList.remove('show');
+}
+
+async function triggerInstall(){
+  if(!_deferredInstallPrompt){
+    showToast('ℹ️ Browser में address bar के पास install icon दबाएं');
+    return;
+  }
+  closeUserMenu();
+  _deferredInstallPrompt.prompt();
+  const { outcome } = await _deferredInstallPrompt.userChoice;
+  if(outcome === 'accepted'){
+    _deferredInstallPrompt = null;
+    hideInstallButtons();
+  }
+}
+
+function dismissInstallBanner(){
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('kj_install_dismissed','1');
+}
+
+
+
+</script>
+</body>
+</html>
